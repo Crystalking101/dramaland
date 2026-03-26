@@ -40,6 +40,10 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const [episodes, setEpisodes] = useState<any[]>([])
   const [currentEp, setCurrentEp] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [inList, setInList] = useState(false)
+  const [listLoading, setListLoading] = useState(false)
+  const [userToken, setUserToken] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -51,7 +55,87 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       setLoading(false)
     }
     load()
+
+    async function getSession() {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+          }
+        }
+      )
+      if (!res.ok) return
+      const data = await res.json()
+      if (data?.id) {
+        setUserId(data.id)
+        const raw = localStorage.getItem(
+          `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+        )
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          setUserToken(parsed?.access_token || null)
+        }
+      }
+    }
+    getSession()
   }, [id])
+
+  useEffect(() => {
+    async function checkList() {
+      if (!userId || !userToken) return
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Watchlist?user_id=eq.${userId}&show_id=eq.${id}&select=id`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+          }
+        }
+      )
+      if (!res.ok) return
+      const data = await res.json()
+      setInList(data.length > 0)
+    }
+    checkList()
+  }, [userId, userToken, id])
+
+  async function toggleList() {
+    if (!userId || !userToken) {
+      alert('Please sign in to save shows to your list!')
+      return
+    }
+    setListLoading(true)
+    if (inList) {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Watchlist?user_id=eq.${userId}&show_id=eq.${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+          }
+        }
+      )
+      setInList(false)
+    } else {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Watchlist`,
+        {
+          method: 'POST',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user_id: userId, show_id: id })
+        }
+      )
+      setInList(true)
+    }
+    setListLoading(false)
+  }
 
   function getYouTubeId(url: string) {
     const match = url?.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
@@ -116,11 +200,16 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
             </svg>
             Comment
           </button>
-          <button className="action-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5">
+          <button
+            className="action-btn"
+            onClick={toggleList}
+            disabled={listLoading}
+            style={{color: inList ? '#FB7185' : '#ffffff'}}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill={inList ? '#FB7185' : 'none'} stroke={inList ? '#FB7185' : '#ffffff'} strokeWidth="1.5">
               <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
             </svg>
-            My List
+            {listLoading ? '...' : inList ? 'Saved' : 'My List'}
           </button>
         </div>
 
