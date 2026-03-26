@@ -130,6 +130,11 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
             {show.release_year} · {show.episode_count} Episodes · {show.genre}
           </div>
           <div className="show-desc">{show.description}</div>
+          {show.cast && (
+            <div style={{marginTop: '12px', fontSize: '13px', color: 'rgba(255,255,255,0.6)'}}>
+              <span style={{color: '#FB7185'}}>Cast: </span>{show.cast}
+            </div>
+          )}
         </div>
 
         {episodes.length > 1 && (
