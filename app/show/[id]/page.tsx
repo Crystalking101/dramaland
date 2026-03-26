@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, use } from 'react'
+import { createClient } from '../../../lib/supabase'
 import Nav from '../../components/Nav'
 import Footer from '../../components/Footer'
 
@@ -49,7 +50,6 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     async function load() {
       const s = await getShow(id)
       const e = await getEpisodes(id)
-      console.log('Episodes:', e)
       setShow(s)
       setEpisodes(e)
       setLoading(false)
@@ -57,26 +57,11 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     load()
 
     async function getSession() {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`,
-        {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-          }
-        }
-      )
-      if (!res.ok) return
-      const data = await res.json()
-      if (data?.id) {
-        setUserId(data.id)
-        const raw = localStorage.getItem(
-          `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
-        )
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          setUserToken(parsed?.access_token || null)
-        }
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUserId(session.user.id)
+        setUserToken(session.access_token)
       }
     }
     getSession()

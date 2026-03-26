@@ -1,10 +1,59 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '../../lib/supabase'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 
 export default function MyList() {
   const [activeTab, setActiveTab] = useState('saved')
+  const [savedShows, setSavedShows] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadSaved() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        setLoading(false)
+        return
+      }
+
+      const userId = session.user.id
+      const token = session.access_token
+
+      // Get watchlist entries
+      const watchRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Watchlist?user_id=eq.${userId}&select=show_id`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      )
+      const watchData = await watchRes.json()
+      if (!watchData.length) {
+        setLoading(false)
+        return
+      }
+
+      // Get show details for each saved show
+      const showIds = watchData.map((w: any) => w.show_id).join(',')
+      const showRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=in.(${showIds})&select=*`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      )
+      const showData = await showRes.json()
+      setSavedShows(showData)
+      setLoading(false)
+    }
+    loadSaved()
+  }, [])
 
   return (
     <>
@@ -22,56 +71,41 @@ export default function MyList() {
 
       {activeTab === 'saved' && (
         <div className="library-content">
-          <div className="cards-grid">
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p1"><div className="card-overlay"></div></div></div><div className="card-title">Midnight Inheritance</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p2"><div className="card-overlay"></div></div></div><div className="card-title">Bound by Contract</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p3"><div className="card-overlay"></div></div></div><div className="card-title">The Hidden Empress</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p4"><div className="card-overlay"></div></div></div><div className="card-title">Dark Obsession</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p5"><div className="card-overlay"></div></div></div><div className="card-title">Stolen Hearts</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p6"><div className="card-overlay"></div></div></div><div className="card-title">The CEO&apos;s Secret Wife</div></div>
-          </div>
+          {loading ? (
+            <div style={{textAlign:'center', color:'#FB7185', padding:'40px', fontFamily:'Playfair Display, serif', fontSize:'20px'}}>
+              Loading...
+            </div>
+          ) : savedShows.length === 0 ? (
+            <div style={{textAlign:'center', color:'rgba(255,255,255,0.4)', padding:'60px', fontSize:'15px'}}>
+              No saved shows yet! Hit the My List button on any show to save it here 🩷
+            </div>
+          ) : (
+            <div className="cards-grid">
+              {savedShows.map((show: any) => (
+                <a href={`/show/${show.id}`} key={show.id} className="card">
+                  <div className="card-poster">
+                    {show.thumbnail_url ? (
+                      <img
+                        src={show.thumbnail_url}
+                        alt={show.title}
+                        style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
+                      />
+                    ) : (
+                      <div className="card-poster-bg p1"><div className="card-overlay"></div></div>
+                    )}
+                  </div>
+                  <div className="card-title">{show.title}</div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {activeTab === 'history' && (
         <div className="library-content">
-          <div className="history-list">
-            <div className="history-item">
-              <div className="history-thumb"><div className="history-thumb-bg p1"></div></div>
-              <div className="history-info">
-                <div className="history-title">Midnight Inheritance</div>
-                <div className="history-ep">Episode 8 — Heart of Darkness</div>
-                <div className="history-bar"><div className="history-fill" style={{width:'65%'}}></div></div>
-              </div>
-              <div className="history-time">2 hours ago</div>
-            </div>
-            <div className="history-item">
-              <div className="history-thumb"><div className="history-thumb-bg p3"></div></div>
-              <div className="history-info">
-                <div className="history-title">The Hidden Empress</div>
-                <div className="history-ep">Episode 3 — The Secret Revealed</div>
-                <div className="history-bar"><div className="history-fill" style={{width:'30%'}}></div></div>
-              </div>
-              <div className="history-time">Yesterday</div>
-            </div>
-            <div className="history-item">
-              <div className="history-thumb"><div className="history-thumb-bg p5"></div></div>
-              <div className="history-info">
-                <div className="history-title">Bound by Contract</div>
-                <div className="history-ep">Episode 12 — The Final Vow</div>
-                <div className="history-bar"><div className="history-fill" style={{width:'100%'}}></div></div>
-              </div>
-              <div className="history-time">3 days ago</div>
-            </div>
-            <div className="history-item">
-              <div className="history-thumb"><div className="history-thumb-bg p2"></div></div>
-              <div className="history-info">
-                <div className="history-title">Dark Obsession</div>
-                <div className="history-ep">Episode 1 — The Encounter</div>
-                <div className="history-bar"><div className="history-fill" style={{width:'15%'}}></div></div>
-              </div>
-              <div className="history-time">Last week</div>
-            </div>
+          <div style={{textAlign:'center', color:'rgba(255,255,255,0.4)', padding:'60px', fontSize:'15px'}}>
+            Watch history coming soon! 🩷
           </div>
         </div>
       )}
