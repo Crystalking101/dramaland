@@ -40,6 +40,13 @@ export default function AdminPanel() {
       if (session?.user) {
         setUserEmail(session.user.email || null)
         setUserToken(session.access_token)
+      } else {
+        // Try refreshing the session
+        const { data: { session: refreshed } } = await supabase.auth.refreshSession()
+        if (refreshed?.user) {
+          setUserEmail(refreshed.user.email || null)
+          setUserToken(refreshed.access_token)
+        }
       }
       setLoading(false)
     }
