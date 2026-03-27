@@ -4,7 +4,7 @@ import { createClient } from '../../lib/supabase'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 
-const ADMIN_EMAIL = 'support@discoverdramaland.com'
+const ADMIN_EMAIL = 'crystalking101@gmail.com'
 
 export default function AdminPanel() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
@@ -218,7 +218,8 @@ export default function AdminPanel() {
     <>
       <Nav/>
       <div style={{padding: '60px 28px', textAlign: 'center', color: '#fff', fontSize: '18px'}}>
-        🔒 Access denied. Admins only.
+        🔒 Access denied. Admins only. <br/>
+        <span style={{fontSize: '13px', color: '#FB7185'}}>Detected email: {userEmail || 'not signed in'}</span>
       </div>
       <Footer/>
     </>

@@ -4,7 +4,7 @@ import { createClient } from '../../../lib/supabase'
 import Nav from '../../components/Nav'
 import Footer from '../../components/Footer'
 
-const ADMIN_EMAIL = 'support@discoverdramaland.com'
+const ADMIN_EMAIL = 'crystalking101@gmail.com'
 
 async function getShow(id: string) {
   const res = await fetch(
