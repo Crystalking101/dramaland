@@ -110,7 +110,6 @@ export default function AdminPanel() {
           release_year: releaseYear ? parseInt(releaseYear) : null,
           episode_count: episodeCount ? parseInt(episodeCount) : null,
           thumbnail_url: thumbnailUrl,
-          cast,
           language,
         })
       }
