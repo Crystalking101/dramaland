@@ -23,6 +23,7 @@ export default function AdminPanel() {
   const [thumbnailUrl, setThumbnailUrl] = useState('')
   const [cast, setCast] = useState('')
   const [language, setLanguage] = useState('Chinese')
+  const [videoUrl, setVideoUrl] = useState('')
 
   // Add Episode form
   const [selectedShowId, setSelectedShowId] = useState('')
@@ -41,7 +42,6 @@ export default function AdminPanel() {
         setUserEmail(session.user.email || null)
         setUserToken(session.access_token)
       } else {
-        // Try refreshing the session
         const { data: { session: refreshed } } = await supabase.auth.refreshSession()
         if (refreshed?.user) {
           setUserEmail(refreshed.user.email || null)
@@ -91,7 +91,9 @@ export default function AdminPanel() {
   async function addShow() {
     if (!title || !description) return
     setSaving(true)
-    const res = await fetch(
+
+    // Step 1: Add the show
+    const showRes = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows`,
       {
         method: 'POST',
@@ -113,19 +115,48 @@ export default function AdminPanel() {
         })
       }
     )
-    if (res.ok) {
-      setMessage('✅ Show added successfully!')
-      setTitle('')
-      setDescription('')
-      setGenre('')
-      setReleaseYear('')
-      setEpisodeCount('')
-      setThumbnailUrl('')
-      setCast('')
-      loadShows()
-    } else {
+
+    if (!showRes.ok) {
       setMessage('❌ Error adding show. Please try again.')
+      setSaving(false)
+      setTimeout(() => setMessage(''), 3000)
+      return
     }
+
+    const showData = await showRes.json()
+    const newShowId = showData[0]?.id
+
+    // Step 2: Add episode with YouTube URL if provided
+    if (newShowId && videoUrl) {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Episodes`,
+        {
+          method: 'POST',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            show_id: newShowId,
+            episode_number: 1,
+            title: 'Episode 1',
+            video_url: videoUrl,
+          })
+        }
+      )
+    }
+
+    setMessage('✅ Show added successfully!')
+    setTitle('')
+    setDescription('')
+    setGenre('')
+    setReleaseYear('')
+    setEpisodeCount('')
+    setThumbnailUrl('')
+    setCast('')
+    setVideoUrl('')
+    loadShows()
     setSaving(false)
     setTimeout(() => setMessage(''), 3000)
   }
@@ -311,6 +342,8 @@ export default function AdminPanel() {
             <input style={inputStyle} value={thumbnailUrl} onChange={e => setThumbnailUrl(e.target.value)} placeholder="https://..."/>
             <label style={labelStyle}>Cast</label>
             <input style={inputStyle} value={cast} onChange={e => setCast(e.target.value)} placeholder="Actor 1, Actor 2..."/>
+            <label style={labelStyle}>Episode 1 YouTube URL</label>
+            <input style={inputStyle} value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtu.be/..."/>
             <button
               onClick={addShow}
               disabled={saving || !title || !description}
