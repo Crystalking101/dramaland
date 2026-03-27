@@ -397,7 +397,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: '#ffffff)',
+                            color: '#FB7185)',
                             cursor: 'pointer',
                             fontSize: '12px',
                             padding: '2px 6px',
