@@ -117,9 +117,10 @@ export default function AdminPanel() {
     )
 
     if (!showRes.ok) {
-      setMessage('❌ Error adding show. Please try again.')
+      const err = await showRes.json()
+      setMessage(`❌ Error: ${JSON.stringify(err)}`)
       setSaving(false)
-      setTimeout(() => setMessage(''), 3000)
+      setTimeout(() => setMessage(''), 8000)
       return
     }
 
