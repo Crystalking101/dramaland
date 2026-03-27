@@ -395,12 +395,13 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
                         <button
                           onClick={() => deleteComment(c.id, c.user_id)}
                           style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#FB7185)',
+                            background: 'rgba(251,113,133,0.15)',
+                            border: '1px solid #FB7185',
+                            color: '#FB7185',
                             cursor: 'pointer',
                             fontSize: '12px',
-                            padding: '2px 6px',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
                           }}
                         >
                           Delete
