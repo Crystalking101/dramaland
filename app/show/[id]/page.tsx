@@ -45,6 +45,11 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const [listLoading, setListLoading] = useState(false)
   const [userToken, setUserToken] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [comments, setComments] = useState<any[]>([])
+  const [commentText, setCommentText] = useState('')
+  const [commentLoading, setCommentLoading] = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -62,10 +67,27 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       if (session?.user) {
         setUserId(session.user.id)
         setUserToken(session.access_token)
+        setUserEmail(session.user.email || null)
       }
     }
     getSession()
+    loadComments()
   }, [id])
+
+  async function loadComments() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Comments?show_id=eq.${id}&select=*&order=created_at.desc`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        }
+      }
+    )
+    if (!res.ok) return
+    const data = await res.json()
+    setComments(data)
+  }
 
   useEffect(() => {
     async function checkList() {
@@ -122,9 +144,47 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     setListLoading(false)
   }
 
+  async function submitComment() {
+    if (!userId || !userToken) {
+      alert('Please sign in to comment!')
+      return
+    }
+    if (!commentText.trim()) return
+    setCommentLoading(true)
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Comments`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId, show_id: id, content: commentText.trim() })
+      }
+    )
+    setCommentText('')
+    setCommentLoading(false)
+    loadComments()
+  }
+
   function getYouTubeId(url: string) {
     const match = url?.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
     return match ? match[1] : null
+  }
+
+  function getInitials(email: string) {
+    return email?.substring(0, 2).toUpperCase() || 'U'
+  }
+
+  function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `${hrs}h ago`
+    return `${Math.floor(hrs / 24)}d ago`
   }
 
   if (loading) return (
@@ -179,11 +239,15 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
 
       <div className="below-player">
         <div className="action-bar">
-          <button className="action-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5">
+          <button
+            className="action-btn"
+            onClick={() => setShowComments(!showComments)}
+            style={{color: showComments ? '#FB7185' : '#ffffff'}}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={showComments ? '#FB7185' : '#ffffff'} strokeWidth="1.5">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
-            Comment
+            Comment {comments.length > 0 && `(${comments.length})`}
           </button>
           <button
             className="action-btn"
@@ -250,11 +314,65 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
         </div>
 
         <div className="comments-section">
-          <div className="section-title" style={{padding: '0 0 18px 0'}}>Comments</div>
-          <div className="comment-input-row">
-            <div className="comment-avatar">CK</div>
-            <input className="comment-input" placeholder="Add a comment..."/>
+          <div className="section-title" style={{padding: '0 0 18px 0'}}>
+            Comments {comments.length > 0 && `(${comments.length})`}
           </div>
+          <div className="comment-input-row">
+            <div className="comment-avatar">
+              {userEmail ? getInitials(userEmail) : '?'}
+            </div>
+            <input
+              className="comment-input"
+              placeholder={userId ? 'Add a comment...' : 'Sign in to comment...'}
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') submitComment() }}
+              disabled={!userId || commentLoading}
+            />
+            <button
+              onClick={submitComment}
+              disabled={!userId || commentLoading || !commentText.trim()}
+              style={{
+                marginLeft: '8px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                background: '#FB7185',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '13px',
+                opacity: (!userId || !commentText.trim()) ? 0.4 : 1
+              }}
+            >
+              {commentLoading ? '...' : 'Post'}
+            </button>
+          </div>
+
+          {comments.length > 0 && (
+            <div style={{marginTop: '20px', display:'flex', flexDirection:'column', gap:'16px'}}>
+              {comments.map((c: any) => (
+                <div key={c.id} style={{display:'flex', gap:'12px', alignItems:'flex-start'}}>
+                  <div className="comment-avatar" style={{flexShrink:0}}>
+                    {getInitials(c.user_id)}
+                  </div>
+                  <div>
+                    <div style={{fontSize:'12px', color:'rgba(255,255,255,0.4)', marginBottom:'4px'}}>
+                      {timeAgo(c.created_at)}
+                    </div>
+                    <div style={{fontSize:'14px', color:'#F0EEE8'}}>
+                      {c.content}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {comments.length === 0 && (
+            <div style={{textAlign:'center', color:'rgba(255,255,255,0.3)', fontSize:'13px', padding:'24px 0'}}>
+              No comments yet — be the first! 🩷
+            </div>
+          )}
         </div>
       </div>
 
