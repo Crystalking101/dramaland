@@ -4,6 +4,8 @@ import { createClient } from '../../../lib/supabase'
 import Nav from '../../components/Nav'
 import Footer from '../../components/Footer'
 
+const ADMIN_EMAIL = 'support@discoverdramaland.com'
+
 async function getShow(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${id}&select=*`,
@@ -50,6 +52,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const [commentLoading, setCommentLoading] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -68,6 +71,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
         setUserId(session.user.id)
         setUserToken(session.access_token)
         setUserEmail(session.user.email || null)
+        setUserName(session.user.user_metadata?.full_name || session.user.email || null)
       }
     }
     getSession()
@@ -160,11 +164,34 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
           Authorization: `Bearer ${userToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ user_id: userId, show_id: id, content: commentText.trim() })
+        body: JSON.stringify({
+          user_id: userId,
+          show_id: id,
+          content: commentText.trim(),
+          user_name: userName || userEmail || 'Anonymous'
+        })
       }
     )
     setCommentText('')
     setCommentLoading(false)
+    loadComments()
+  }
+
+  async function deleteComment(commentId: string, commentUserId: string) {
+    if (!userToken) return
+    const isAdmin = userEmail === ADMIN_EMAIL
+    const isOwner = commentUserId === userId
+    if (!isAdmin && !isOwner) return
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Comments?id=eq.${commentId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+        }
+      }
+    )
     loadComments()
   }
 
@@ -173,8 +200,11 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     return match ? match[1] : null
   }
 
-  function getInitials(email: string) {
-    return email?.substring(0, 2).toUpperCase() || 'U'
+  function getInitials(name: string) {
+    if (!name) return 'U'
+    const parts = name.split(' ')
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+    return name.substring(0, 2).toUpperCase()
   }
 
   function timeAgo(dateStr: string) {
@@ -209,6 +239,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
 
   const currentEpisode = episodes[currentEp]
   const videoId = currentEpisode ? getYouTubeId(currentEpisode.video_url) : null
+  const isAdmin = userEmail === ADMIN_EMAIL
 
   return (
     <>
@@ -319,7 +350,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
           </div>
           <div className="comment-input-row">
             <div className="comment-avatar">
-              {userEmail ? getInitials(userEmail) : '?'}
+              {userName ? getInitials(userName) : userEmail ? getInitials(userEmail) : '?'}
             </div>
             <input
               className="comment-input"
@@ -353,9 +384,29 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
               {comments.map((c: any) => (
                 <div key={c.id} style={{display:'flex', gap:'12px', alignItems:'flex-start'}}>
                   <div className="comment-avatar" style={{flexShrink:0}}>
-                    {getInitials(c.user_id)}
+                    {getInitials(c.user_name || c.user_id)}
                   </div>
-                  <div>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                      <div style={{fontSize:'13px', color:'rgba(255,255,255,0.7)', fontWeight:'500'}}>
+                        {c.user_name || 'Anonymous'}
+                      </div>
+                      {(isAdmin || c.user_id === userId) && (
+                        <button
+                          onClick={() => deleteComment(c.id, c.user_id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ffffff)',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            padding: '2px 6px',
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                     <div style={{fontSize:'12px', color:'rgba(255,255,255,0.4)', marginBottom:'4px'}}>
                       {timeAgo(c.created_at)}
                     </div>
