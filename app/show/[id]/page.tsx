@@ -69,6 +69,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const [showComments, setShowComments] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
+  const [activeTag, setActiveTag] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -235,6 +236,11 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     return `${Math.floor(hrs / 24)}d ago`
   }
 
+  function handleTagClick(tag: string) {
+    setActiveTag(tag)
+    window.location.href = `/search?q=${encodeURIComponent(tag.trim())}`
+  }
+
   if (loading) return (
     <>
       <Nav/>
@@ -259,6 +265,12 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const videoId = currentEpisode ? getYouTubeId(currentEpisode.video_url) : null
   const isAdmin = userEmail === ADMIN_EMAIL
 
+  // Parse tags - combine genre and tags fields
+  const allTags = [
+    ...(show.genre ? show.genre.split(',').map((t: string) => t.trim()) : []),
+    ...(show.tags ? show.tags.split(',').map((t: string) => t.trim()) : []),
+  ].filter(Boolean)
+
   return (
     <>
       <Nav/>
@@ -270,7 +282,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
             height="100%"
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
             title={currentEpisode?.title || 'Episode'}
-            frameBorder="0"
+            frameBorder="auto"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
@@ -291,12 +303,12 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
           <button
             className="action-btn"
             onClick={() => {
-             setShowComments(true)
-             setTimeout(() => {
-              document.querySelector('.comments-section')?.scrollIntoView({ behavior: 'smooth' })
-            }, 100)
-          }}
-          style={{color: showComments ? '#FB7185' : '#ffffff'}}
+              setShowComments(true)
+              setTimeout(() => {
+                document.querySelector('.comments-section')?.scrollIntoView({ behavior: 'smooth' })
+              }, 100)
+            }}
+            style={{color: showComments ? '#FB7185' : '#ffffff'}}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={showComments ? '#FB7185' : '#ffffff'} strokeWidth="1.5">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
@@ -319,9 +331,34 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
         <div className="show-info">
           <div className="show-title">{show.title}</div>
           <div className="show-meta">
-            {show.release_year} · {show.episode_count} Episodes · {show.genre}
+            {show.release_year} · {show.episode_count} Episodes
           </div>
-          <div className="show-desc">{show.description}</div>
+
+          {allTags.length > 0 && (
+            <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'12px'}}>
+              {allTags.map((tag: string) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(251,113,133,0.4)',
+                    background: activeTag === tag ? '#FB7185' : 'rgba(251,113,133,0.1)',
+                    color: activeTag === tag ? '#fff' : '#FB7185',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="show-desc" style={{marginTop:'12px'}}>{show.description}</div>
           {show.cast && (
             <div style={{marginTop: '12px', fontSize: '13px', color: 'rgba(255,255,255,0.6)'}}>
               <span style={{color: '#FB7185'}}>Cast: </span>{show.cast}
@@ -466,4 +503,4 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       <Footer/>
     </>
   )
-} 
+}
