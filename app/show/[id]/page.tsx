@@ -37,10 +37,26 @@ async function getEpisodes(showId: string) {
   return res.json()
 }
 
+async function getSimilarShows(currentId: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+    {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+      cache: 'no-store'
+    }
+  )
+  if (!res.ok) return []
+  return res.json()
+}
+
 export default function ShowDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [show, setShow] = useState<any>(null)
   const [episodes, setEpisodes] = useState<any[]>([])
+  const [similarShows, setSimilarShows] = useState<any[]>([])
   const [currentEp, setCurrentEp] = useState(0)
   const [loading, setLoading] = useState(true)
   const [inList, setInList] = useState(false)
@@ -58,8 +74,10 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     async function load() {
       const s = await getShow(id)
       const e = await getEpisodes(id)
+      const similar = await getSimilarShows(id)
       setShow(s)
       setEpisodes(e)
+      setSimilarShows(similar)
       setLoading(false)
     }
     load()
@@ -332,17 +350,29 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
           </div>
         )}
 
-        <div className="recommendations">
-          <div className="section-title" style={{padding: '0 0 18px 0'}}>You May Also Like</div>
-          <div className="cards-row">
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p1"><div className="card-overlay"></div></div></div><div className="card-title">The Hidden Empress</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p2"><div className="card-overlay"></div></div></div><div className="card-title">Gilded Cage</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p3"><div className="card-overlay"></div></div></div><div className="card-title">The Dragon&apos;s Bride</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p4"><div className="card-overlay"></div></div></div><div className="card-title">Stolen Hearts</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p5"><div className="card-overlay"></div></div></div><div className="card-title">Love in the Forbidden City</div></div>
-            <div className="card"><div className="card-poster"><div className="card-poster-bg p6"><div className="card-overlay"></div></div></div><div className="card-title">The CEO&apos;s Secret Wife</div></div>
+        {similarShows.length > 0 && (
+          <div className="recommendations">
+            <div className="section-title" style={{padding: '0 0 18px 0'}}>You May Also Like</div>
+            <div className="cards-row">
+              {similarShows.map((s: any) => (
+                <a href={`/show/${s.id}`} key={s.id} className="card">
+                  <div className="card-poster">
+                    {s.thumbnail_url ? (
+                      <img
+                        src={s.thumbnail_url}
+                        alt={s.title}
+                        style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
+                      />
+                    ) : (
+                      <div className="card-poster-bg p1"><div className="card-overlay"></div></div>
+                    )}
+                  </div>
+                  <div className="card-title">{s.short_title || s.title}</div>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="comments-section">
           <div className="section-title" style={{padding: '0 0 18px 0'}}>
@@ -431,4 +461,4 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       <Footer/>
     </>
   )
-}
+} 
