@@ -290,8 +290,13 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
         <div className="action-bar">
           <button
             className="action-btn"
-            onClick={() => setShowComments(!showComments)}
-            style={{color: showComments ? '#FB7185' : '#ffffff'}}
+            onClick={() => {
+             setShowComments(true)
+             setTimeout(() => {
+              document.querySelector('.comments-section')?.scrollIntoView({ behavior: 'smooth' })
+            }, 100)
+          }}
+          style={{color: showComments ? '#FB7185' : '#ffffff'}}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={showComments ? '#FB7185' : '#ffffff'} strokeWidth="1.5">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
