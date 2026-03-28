@@ -19,6 +19,10 @@ async function getShows() {
 export default async function Home() {
   const shows = await getShows()
 
+  const curated = shows.slice(0, 6)
+  const trending = shows.slice(0, 6)
+  const recent = shows.slice().reverse().slice(0, 6)
+
   return (
     <>
       <Nav/>
@@ -29,8 +33,8 @@ export default async function Home() {
             <div className="section-title">Curated Picks</div>
           </div>
           <div className="cards-row">
-            {shows.map((show: any) => (
-              <a href={`/show/${show.id}`} key={show.id} className="card">
+            {curated.map((show: any) => (
+              <a href={`/show/${show.id}`} key={show.id} className="card" style={{textDecoration:'none'}}>
                 <div className="card-poster">
                   {show.thumbnail_url ? (
                     <img
@@ -71,12 +75,22 @@ export default async function Home() {
           <div className="see-all">See All →</div>
         </div>
         <div className="cards-row">
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p7"><div className="card-overlay"></div></div></div><div className="card-title">The Hidden Empress</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p8"><div className="card-overlay"></div></div></div><div className="card-title">Gilded Cage</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p9"><div className="card-overlay"></div></div></div><div className="card-title">The Dragon&apos;s Bride</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p10"><div className="card-overlay"></div></div></div><div className="card-title">Stolen Hearts</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p11"><div className="card-overlay"></div></div></div><div className="card-title">Love in the Forbidden City</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p12"><div className="card-overlay"></div></div></div><div className="card-title">The CEO&apos;s Secret Wife</div></div>
+          {trending.map((show: any) => (
+            <a href={`/show/${show.id}`} key={show.id} className="card" style={{textDecoration:'none'}}>
+              <div className="card-poster">
+                {show.thumbnail_url ? (
+                  <img
+                    src={show.thumbnail_url}
+                    alt={show.title}
+                    style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
+                  />
+                ) : (
+                  <div className="card-poster-bg p1"><div className="card-overlay"></div></div>
+                )}
+              </div>
+              <div className="card-title">{show.short_title || show.title}</div>
+            </a>
+          ))}
         </div>
       </div>
 
@@ -86,12 +100,22 @@ export default async function Home() {
           <div className="see-all">See All →</div>
         </div>
         <div className="cards-row">
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p5"><div className="card-overlay"></div></div></div><div className="card-title">Midnight Inheritance</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p3"><div className="card-overlay"></div></div></div><div className="card-title">Bound by Contract</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p1"><div className="card-overlay"></div></div></div><div className="card-title">Dark Obsession</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p9"><div className="card-overlay"></div></div></div><div className="card-title">Second Chance</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p2"><div className="card-overlay"></div></div></div><div className="card-title">The CEO&apos;s Wife</div></div>
-          <div className="card"><div className="card-poster"><div className="card-poster-bg p6"><div className="card-overlay"></div></div></div><div className="card-title">Shattered Crown</div></div>
+          {recent.map((show: any) => (
+            <a href={`/show/${show.id}`} key={`recent-${show.id}`} className="card" style={{textDecoration:'none'}}>
+              <div className="card-poster">
+                {show.thumbnail_url ? (
+                  <img
+                    src={show.thumbnail_url}
+                    alt={show.title}
+                    style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
+                  />
+                ) : (
+                  <div className="card-poster-bg p1"><div className="card-overlay"></div></div>
+                )}
+              </div>
+              <div className="card-title">{show.short_title || show.title}</div>
+            </a>
+          ))}
         </div>
       </div>
 

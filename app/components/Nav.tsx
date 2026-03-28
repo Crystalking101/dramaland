@@ -5,6 +5,7 @@ import { createClient } from '../../lib/supabase'
 export default function Nav() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -26,6 +27,12 @@ export default function Nav() {
     window.location.href = '/'
   }
 
+  function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+    }
+  }
+
   return (
     <nav>
       <div className="nav-left">
@@ -43,7 +50,22 @@ export default function Nav() {
             <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
             <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
-          Search dramas...
+          <input
+            type="text"
+            placeholder="Search dramas..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+            style={{
+              background: 'none',
+              border: 'none',
+              outline: 'none',
+              color: '#fff',
+              fontSize: '13px',
+              width: '140px',
+              fontFamily: 'inherit',
+            }}
+          />
         </div>
 
         <div className="user-wrap">
