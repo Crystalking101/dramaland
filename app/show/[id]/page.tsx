@@ -360,7 +360,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
             <div className="section-title" style={{padding: '0 0 18px 0'}}>You May Also Like</div>
             <div className="cards-row">
               {similarShows.map((s: any) => (
-                <a href={`/show/${s.id}`} key={s.id} className="card">
+                <a href={`/show/${s.id}`} key={s.id} className="card" style={{textDecoration:'none', color:'inherit'}}>
                   <div className="card-poster">
                     {s.thumbnail_url ? (
                       <img
