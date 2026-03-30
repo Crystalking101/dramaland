@@ -72,7 +72,7 @@ export default async function Home() {
       <div className="section">
         <div className="section-header">
           <div className="section-title">Trending Now</div>
-          <div className="see-all">See All →</div>
+          <a href="/trending" className="see-all" style={{textDecoration:'none', color:'inherit'}}>See All →</a>
         </div>
         <div className="cards-row">
           {trending.map((show: any) => (
@@ -97,7 +97,7 @@ export default async function Home() {
       <div className="section">
         <div className="section-header">
           <div className="section-title">Recently Added</div>
-          <div className="see-all">See All →</div>
+          <a href="/recent" className="see-all" style={{textDecoration:'none', color:'inherit'}}>See All →</a>
         </div>
         <div className="cards-row">
           {recent.map((show: any) => (
