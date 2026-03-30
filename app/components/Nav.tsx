@@ -38,10 +38,10 @@ export default function Nav() {
       <div className="nav-left">
         <div className="logo">Drama Land</div>
         <div className="nav-links">
-          <a href="/">Home</a>
-          <a href="/search">New</a>
-          <a href="/search">Popular</a>
-          <a href="/search">Updated</a>
+        <a href="/">Home</a>
+        <a href="/recent">New</a>
+        <a href="/trending">Popular</a>
+        <a href="/search">Updated</a>
         </div>
       </div>
       <div className="nav-right">
