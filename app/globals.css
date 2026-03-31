@@ -173,7 +173,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 .logo { font-size: 14px; margin-right: 4px; }
 .nav-links { display: flex; }
 .nav-links a { font-size: 10px; padding: 4px 5px; }
-.search { min-width: unset; width: 100px; padding: 6px 10px; font-size: 11px; }
+.search { min-width: unset; width: 80px; padding: 6px 8px; font-size: 11px; margin-right: 6px; }
 .search input { width: 60px; }
 
   
