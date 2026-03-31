@@ -111,6 +111,7 @@ export default function AdminPanel() {
           episode_count: episodeCount ? parseInt(episodeCount) : null,
           thumbnail_url: thumbnailUrl,
           language,
+          cast,
         })
       }
     )
