@@ -80,6 +80,18 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       setEpisodes(e)
       setSimilarShows(similar)
       setLoading(false)
+      if (s) {
+        document.title = `${s.title} | Drama Land`
+        const metaDesc = document.querySelector('meta[name="description"]')
+        if (metaDesc) {
+          metaDesc.setAttribute('content', s.description || `Watch ${s.title} on Drama Land`)
+        } else {
+          const meta = document.createElement('meta')
+          meta.name = 'description'
+          meta.content = s.description || `Watch ${s.title} on Drama Land`
+          document.head.appendChild(meta)
+        }
+      }
     }
     load()
 
