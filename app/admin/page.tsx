@@ -36,6 +36,10 @@ export default function AdminPanel() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
+  // For editing backdrop on existing shows
+  const [expandedShowId, setExpandedShowId] = useState<string | null>(null)
+  const [editBackdropUrl, setEditBackdropUrl] = useState('')
+
   useEffect(() => {
     async function getSession() {
       const supabase = createClient()
@@ -213,7 +217,31 @@ export default function AdminPanel() {
     loadShows()
   }
 
-  async function toggleFeatured(showId: string, current: boolean) {
+  async function toggleFeatured(show: any) {
+    const turningOn = !show.is_featured
+    // If turning on, expand to show backdrop input
+    if (turningOn) {
+      setExpandedShowId(show.id)
+      setEditBackdropUrl(show.backdrop_url || '')
+    } else {
+      setExpandedShowId(null)
+    }
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${show.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_featured: turningOn })
+      }
+    )
+    loadShows()
+  }
+
+  async function saveBackdrop(showId: string) {
     await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${showId}`,
       {
@@ -223,10 +251,14 @@ export default function AdminPanel() {
           Authorization: `Bearer ${userToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_featured: !current })
+        body: JSON.stringify({ backdrop_url: editBackdropUrl })
       }
     )
+    setExpandedShowId(null)
+    setEditBackdropUrl('')
+    setMessage('✅ Backdrop saved! Hero banner is ready.')
     loadShows()
+    setTimeout(() => setMessage(''), 3000)
   }
 
   async function deleteComment(commentId: string) {
@@ -322,38 +354,68 @@ export default function AdminPanel() {
               All Shows ({shows.length})
             </div>
             {shows.map((show: any) => (
-              <div key={show.id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${show.is_featured ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`}}>
-                <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
-                  {show.thumbnail_url && (
-                    <img src={show.thumbnail_url} alt={show.title} style={{width: '40px', height: '56px', objectFit: 'cover', borderRadius: '6px'}}/>
-                  )}
-                  <div>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                      <div style={{color: '#F0EEE8', fontSize: '14px', fontWeight: '500'}}>{show.title}</div>
-                      {show.is_featured && (
-                        <span style={{fontSize: '10px', background: '#FB7185', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontWeight: '600'}}>FEATURED</span>
+              <div key={show.id} style={{borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${show.is_featured ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`, overflow: 'hidden'}}>
+                
+                {/* Show row */}
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px'}}>
+                  <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
+                    {show.thumbnail_url && (
+                      <img src={show.thumbnail_url} alt={show.title} style={{width: '40px', height: '56px', objectFit: 'cover', borderRadius: '6px'}}/>
+                    )}
+                    <div>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <div style={{color: '#F0EEE8', fontSize: '14px', fontWeight: '500'}}>{show.title}</div>
+                        {show.is_featured && (
+                          <span style={{fontSize: '10px', background: '#FB7185', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontWeight: '600'}}>FEATURED</span>
+                        )}
+                      </div>
+                      <div style={{color: 'rgba(255,255,255,0.4)', fontSize: '12px'}}>{show.genre} · {show.release_year}</div>
+                      {show.backdrop_url && (
+                        <div style={{color: 'rgba(251,113,133,0.6)', fontSize: '11px', marginTop: '2px'}}>✓ Backdrop uploaded</div>
                       )}
                     </div>
-                    <div style={{color: 'rgba(255,255,255,0.4)', fontSize: '12px'}}>{show.genre} · {show.release_year}</div>
-                    {show.backdrop_url && (
-                      <div style={{color: 'rgba(251,113,133,0.6)', fontSize: '11px', marginTop: '2px'}}>✓ Backdrop uploaded</div>
-                    )}
+                  </div>
+                  <div style={{display: 'flex', gap: '8px', flexShrink: 0}}>
+                    <button
+                      onClick={() => toggleFeatured(show)}
+                      style={{background: show.is_featured ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
+                    >
+                      {show.is_featured ? '★ Featured' : '☆ Feature'}
+                    </button>
+                    <button
+                      onClick={() => deleteShow(show.id)}
+                      style={{background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div style={{display: 'flex', gap: '8px', flexShrink: 0}}>
-                  <button
-                    onClick={() => toggleFeatured(show.id, show.is_featured)}
-                    style={{background: show.is_featured ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
-                  >
-                    {show.is_featured ? '★ Featured' : '☆ Feature'}
-                  </button>
-                  <button
-                    onClick={() => deleteShow(show.id)}
-                    style={{background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
-                  >
-                    Delete
-                  </button>
-                </div>
+
+                {/* Backdrop input — shows when featured */}
+                {(expandedShowId === show.id || show.is_featured) && (
+                  <div style={{padding: '12px 16px', borderTop: '1px solid rgba(251,113,133,0.2)', background: 'rgba(251,113,133,0.05)'}}>
+                    <div style={{fontSize: '12px', color: '#FB7185', marginBottom: '8px', fontWeight: '600'}}>
+                      🎬 Paste a landscape backdrop image URL for the hero banner:
+                    </div>
+                    <div style={{display: 'flex', gap: '8px'}}>
+                      <input
+                        style={{...inputStyle, marginBottom: 0, flex: 1}}
+                        value={expandedShowId === show.id ? editBackdropUrl : show.backdrop_url || ''}
+                        onChange={e => {
+                          setExpandedShowId(show.id)
+                          setEditBackdropUrl(e.target.value)
+                        }}
+                        placeholder="https://... (wide/landscape image, 1280×720 recommended)"
+                      />
+                      <button
+                        onClick={() => saveBackdrop(show.id)}
+                        style={{padding: '10px 18px', borderRadius: '8px', background: '#FB7185', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600', flexShrink: 0}}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -384,7 +446,6 @@ export default function AdminPanel() {
             <label style={labelStyle}>Episode 1 YouTube URL</label>
             <input style={inputStyle} value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtu.be/..."/>
 
-            {/* Featured toggle */}
             <div
               onClick={() => setIsFeatured(!isFeatured)}
               style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '8px', border: `1px solid ${isFeatured ? '#FB7185' : 'rgba(255,255,255,0.15)'}`, background: isFeatured ? 'rgba(251,113,133,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', marginBottom: '20px'}}
