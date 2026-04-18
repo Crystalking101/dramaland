@@ -19,9 +19,9 @@ async function getShows() {
 export default async function Home() {
   const shows = await getShows()
 
-  const curated = shows.slice(0, 6)
-  const trending = shows.slice(0, 6)
-  const recent = shows.slice().reverse().slice(0, 6)
+  const curated = shows.slice(0, 20)
+  const trending = shows.slice(0, 20)
+  const recent = shows.slice().reverse().slice(0, 20)
 
   return (
     <>
