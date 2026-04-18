@@ -218,14 +218,6 @@ export default function AdminPanel() {
   }
 
   async function toggleFeatured(show: any) {
-    const turningOn = !show.is_featured
-    // If turning on, expand to show backdrop input
-    if (turningOn) {
-      setExpandedShowId(show.id)
-      setEditBackdropUrl(show.backdrop_url || '')
-    } else {
-      setExpandedShowId(null)
-    }
     await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${show.id}`,
       {
@@ -235,7 +227,7 @@ export default function AdminPanel() {
           Authorization: `Bearer ${userToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_featured: turningOn })
+        body: JSON.stringify({ is_featured: !show.is_featured })
       }
     )
     loadShows()
@@ -355,7 +347,7 @@ export default function AdminPanel() {
             </div>
             {shows.map((show: any) => (
               <div key={show.id} style={{borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${show.is_featured ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`, overflow: 'hidden'}}>
-                
+
                 {/* Show row */}
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px'}}>
                   <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
@@ -377,6 +369,15 @@ export default function AdminPanel() {
                   </div>
                   <div style={{display: 'flex', gap: '8px', flexShrink: 0}}>
                     <button
+                      onClick={() => {
+                        setExpandedShowId(expandedShowId === show.id ? null : show.id)
+                        setEditBackdropUrl(show.backdrop_url || '')
+                      }}
+                      style={{background: show.backdrop_url ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${show.backdrop_url ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: show.backdrop_url ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
+                    >
+                      🖼 Backdrop
+                    </button>
+                    <button
                       onClick={() => toggleFeatured(show)}
                       style={{background: show.is_featured ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: show.is_featured ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}
                     >
@@ -391,8 +392,8 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* Backdrop input — shows when featured */}
-                {(expandedShowId === show.id || show.is_featured) && (
+                {/* Backdrop input — shows when 🖼 Backdrop is clicked */}
+                {expandedShowId === show.id && (
                   <div style={{padding: '12px 16px', borderTop: '1px solid rgba(251,113,133,0.2)', background: 'rgba(251,113,133,0.05)'}}>
                     <div style={{fontSize: '12px', color: '#FB7185', marginBottom: '8px', fontWeight: '600'}}>
                       🎬 Paste a landscape backdrop image URL for the hero banner:
@@ -400,11 +401,8 @@ export default function AdminPanel() {
                     <div style={{display: 'flex', gap: '8px'}}>
                       <input
                         style={{...inputStyle, marginBottom: 0, flex: 1}}
-                        value={expandedShowId === show.id ? editBackdropUrl : show.backdrop_url || ''}
-                        onChange={e => {
-                          setExpandedShowId(show.id)
-                          setEditBackdropUrl(e.target.value)
-                        }}
+                        value={editBackdropUrl}
+                        onChange={e => setEditBackdropUrl(e.target.value)}
                         placeholder="https://... (wide/landscape image, 1280×720 recommended)"
                       />
                       <button
