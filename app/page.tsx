@@ -1,5 +1,6 @@
 import Nav from './components/Nav'
 import Footer from './components/Footer'
+import HeroBanner from './components/HeroBanner'
 
 async function getShows() {
   const res = await fetch(
@@ -19,6 +20,7 @@ async function getShows() {
 export default async function Home() {
   const shows = await getShows()
 
+  const featured = shows.filter((s: any) => s.is_featured && s.backdrop_url)
   const curated = shows.slice(0, 20)
   const trending = shows.slice(0, 20)
   const recent = shows.slice().reverse().slice(0, 20)
@@ -26,6 +28,8 @@ export default async function Home() {
   return (
     <>
       <Nav/>
+
+      <HeroBanner shows={featured} />
 
       {shows.length > 0 ? (
         <div className="section">
