@@ -218,7 +218,7 @@ export default function AdminPanel() {
   }
 
   async function toggleFeatured(show: any) {
-    await fetch(
+    const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${show.id}`,
       {
         method: 'PATCH',
@@ -226,15 +226,27 @@ export default function AdminPanel() {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           Authorization: `Bearer ${userToken}`,
           'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
         },
         body: JSON.stringify({ is_featured: !show.is_featured })
       }
     )
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('toggleFeatured failed:', res.status, err)
+      setMessage(`❌ Error featuring show: ${res.status} — ${err}`)
+      setTimeout(() => setMessage(''), 6000)
+      return
+    }
+
+    setMessage(`✅ ${show.is_featured ? 'Unfeatured' : 'Featured'} successfully!`)
+    setTimeout(() => setMessage(''), 3000)
     loadShows()
   }
 
   async function saveBackdrop(showId: string) {
-    await fetch(
+    const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${showId}`,
       {
         method: 'PATCH',
@@ -242,10 +254,20 @@ export default function AdminPanel() {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           Authorization: `Bearer ${userToken}`,
           'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
         },
         body: JSON.stringify({ backdrop_url: editBackdropUrl })
       }
     )
+
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('saveBackdrop failed:', res.status, err)
+      setMessage(`❌ Error saving backdrop: ${res.status} — ${err}`)
+      setTimeout(() => setMessage(''), 6000)
+      return
+    }
+
     setExpandedShowId(null)
     setEditBackdropUrl('')
     setMessage('✅ Backdrop saved! Hero banner is ready.')
@@ -321,7 +343,7 @@ export default function AdminPanel() {
         </div>
 
         {message && (
-          <div style={{padding: '12px 16px', borderRadius: '8px', background: 'rgba(251,113,133,0.15)', border: '1px solid #FB7185', color: '#FB7185', fontSize: '14px', marginBottom: '24px'}}>
+          <div style={{padding: '12px 16px', borderRadius: '8px', background: message.startsWith('❌') ? 'rgba(255,50,50,0.15)' : 'rgba(251,113,133,0.15)', border: `1px solid ${message.startsWith('❌') ? 'rgba(255,50,50,0.6)' : '#FB7185'}`, color: message.startsWith('❌') ? '#ff6b6b' : '#FB7185', fontSize: '14px', marginBottom: '24px'}}>
             {message}
           </div>
         )}
