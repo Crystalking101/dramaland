@@ -54,13 +54,13 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
 
         {/* Buttons */}
         <div style={{display: 'flex', gap: '12px'}}>
-          
+          <a
             href={`/show/${show.id}`}
             style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '8px', background: '#FB7185', color: '#fff', fontWeight: '700', fontSize: '15px', textDecoration: 'none'}}
           >
             ▶ Watch Now
           </a>
-          
+          <a
             href={`/show/${show.id}`}
             style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
           >
