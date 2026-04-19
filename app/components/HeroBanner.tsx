@@ -17,7 +17,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
   const show = shows[current]
 
   return (
-    <div style={{position: 'relative', width: '100%', height: '520px', overflow: 'hidden', marginBottom: '8px'}}>
+    <div style={{position: 'relative', width: '100%', height: '520px', overflow: 'hidden', marginTop: '-80px', marginBottom: '8px'}}>
 
       {/* Backdrop image */}
       <div style={{position: 'absolute', inset: 0}}>
@@ -34,22 +34,12 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
           {show.title}
         </div>
 
-        {show.genre && (
-          <div style={{display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap'}}>
-            {show.genre.split(',').slice(0, 3).map((g: string) => (
-              <span key={g} style={{fontSize: '11px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(251,113,133,0.5)', color: '#FB7185', background: 'rgba(0,0,0,0.4)'}}>
-                {g.trim()}
-              </span>
-            ))}
-          </div>
-        )}
-
         <div style={{fontSize: '14px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, marginBottom: '24px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textShadow: '0 2px 6px rgba(0,0,0,0.8)'}}>
           {show.description}
         </div>
 
         {/* Buttons */}
-        <div style={{display: 'flex', gap: '12px'}}>
+        <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
           <a
             href={`/show/${show.id}`}
             style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '8px', background: '#FB7185', color: '#fff', fontWeight: '700', fontSize: '15px', textDecoration: 'none'}}
@@ -58,9 +48,12 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
           </a>
           <a
             href={`/show/${show.id}`}
-            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
+            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
           >
-            + My List
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            My List
           </a>
         </div>
       </div>
