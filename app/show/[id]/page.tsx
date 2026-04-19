@@ -37,9 +37,27 @@ async function getEpisodes(showId: string) {
   return res.json()
 }
 
-async function getSimilarShows(currentId: string) {
+async function getSimilarShows(currentId: string, genre: string) {
+  if (!genre) {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+        cache: 'no-store'
+      }
+    )
+    if (!res.ok) return []
+    return res.json()
+  }
+
+  // Get first genre tag to match on
+  const firstGenre = genre.split(',')[0].trim()
+
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&genre=ilike.*${encodeURIComponent(firstGenre)}*&select=*&limit=6`,
     {
       headers: {
         apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -49,7 +67,25 @@ async function getSimilarShows(currentId: string) {
     }
   )
   if (!res.ok) return []
-  return res.json()
+  const data = await res.json()
+
+  // If not enough genre matches, fill with random shows
+  if (data.length < 3) {
+    const fallback = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+        cache: 'no-store'
+      }
+    )
+    if (!fallback.ok) return data
+    return fallback.json()
+  }
+
+  return data
 }
 
 export default function ShowDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -75,7 +111,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     async function load() {
       const s = await getShow(id)
       const e = await getEpisodes(id)
-      const similar = await getSimilarShows(id)
+      const similar = await getSimilarShows(id, s?.genre || '')
       setShow(s)
       setEpisodes(e)
       setSimilarShows(similar)
@@ -277,7 +313,6 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   const videoId = currentEpisode ? getYouTubeId(currentEpisode.video_url) : null
   const isAdmin = userEmail === ADMIN_EMAIL
 
-  // Parse tags - combine genre and tags fields
   const allTags = [
     ...(show.genre ? show.genre.split(',').map((t: string) => t.trim()) : []),
     ...(show.tags ? show.tags.split(',').map((t: string) => t.trim()) : []),
