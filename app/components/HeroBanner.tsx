@@ -28,27 +28,23 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
         />
       </div>
 
-      {/* Gradient overlays */}
-      <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(to right, #0E0A0D 35%, transparent 75%)'}}/>
-      <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0E0A0D 0%, transparent 50%)'}}/>
-
       {/* Content */}
       <div style={{position: 'absolute', bottom: '60px', left: '40px', maxWidth: '480px'}}>
-        <div style={{fontFamily: 'Playfair Display, serif', fontSize: '42px', fontWeight: '700', color: '#fff', lineHeight: 1.15, marginBottom: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.5)'}}>
+        <div style={{fontFamily: 'Playfair Display, serif', fontSize: '42px', fontWeight: '700', color: '#fff', lineHeight: 1.15, marginBottom: '12px', textShadow: '0 4px 12px rgba(0,0,0,0.8)'}}>
           {show.title}
         </div>
 
         {show.genre && (
           <div style={{display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap'}}>
             {show.genre.split(',').slice(0, 3).map((g: string) => (
-              <span key={g} style={{fontSize: '11px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(251,113,133,0.5)', color: '#FB7185', background: 'rgba(251,113,133,0.1)'}}>
+              <span key={g} style={{fontSize: '11px', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(251,113,133,0.5)', color: '#FB7185', background: 'rgba(0,0,0,0.4)'}}>
                 {g.trim()}
               </span>
             ))}
           </div>
         )}
 
-        <div style={{fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: '24px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>
+        <div style={{fontSize: '14px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, marginBottom: '24px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textShadow: '0 2px 6px rgba(0,0,0,0.8)'}}>
           {show.description}
         </div>
 
@@ -62,7 +58,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
           </a>
           <a
             href={`/show/${show.id}`}
-            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
+            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
           >
             + My List
           </a>
@@ -71,7 +67,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
 
       {/* Dot indicators */}
       {shows.length > 1 && (
-        <div style={{position: 'absolute', bottom: '40px', left: '40px', display: 'flex', gap: '8px'}}>
+        <div style={{position: 'absolute', bottom: '24px', left: '40px', display: 'flex', gap: '8px'}}>
           {shows.map((_: any, i: number) => (
             <button
               key={i}
