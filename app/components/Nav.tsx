@@ -36,7 +36,7 @@ export default function Nav() {
   return (
     <nav>
       <div className="nav-left">
-        <div className="logo">Drama Land</div>
+      <a href="/" style={{textDecoration: 'none'}}><div className="logo">Drama Land</div></a>
         <div className="nav-links">
         <a href="/">Home</a>
         <a href="/recent">New</a>
