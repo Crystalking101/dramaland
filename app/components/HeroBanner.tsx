@@ -52,8 +52,8 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
   }
 
   return (
-    <div style={{padding: '30px 32px 20px 32x'}}>
-      <div style={{position: 'relative', width: '100%', height: '400px', overflow: 'hidden', borderRadius: '16px'}}>
+    <div style={{padding: '30px 32px 20px 32px'}}>
+      <div style={{position: 'relative', width: '100%', height: '460px', overflow: 'hidden', borderRadius: '16px'}}>
 
         {/* Backdrop image */}
         <div style={{position: 'absolute', inset: 0}}>
