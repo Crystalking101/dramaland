@@ -17,7 +17,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
   const show = shows[current]
 
   return (
-    <div style={{position: 'relative', width: '100%', height: '85vh', overflow: 'hidden', marginTop: '-80px', marginBottom: '8px'}}>
+    <div style={{position: 'relative', width: '100%', height: '520px', overflow: 'hidden', marginBottom: '8px'}}>
 
       {/* Backdrop image */}
       <div style={{position: 'absolute', inset: 0}}>
@@ -33,7 +33,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
       <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0E0A0D 0%, transparent 50%)'}}/>
 
       {/* Content */}
-      <div style={{position: 'absolute', bottom: '80px', left: '40px', maxWidth: '480px'}}>
+      <div style={{position: 'absolute', bottom: '60px', left: '40px', maxWidth: '480px'}}>
         <div style={{fontFamily: 'Playfair Display, serif', fontSize: '42px', fontWeight: '700', color: '#fff', lineHeight: 1.15, marginBottom: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.5)'}}>
           {show.title}
         </div>
@@ -54,13 +54,13 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
 
         {/* Buttons */}
         <div style={{display: 'flex', gap: '12px'}}>
-          
+          <a
             href={`/show/${show.id}`}
             style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '8px', background: '#FB7185', color: '#fff', fontWeight: '700', fontSize: '15px', textDecoration: 'none'}}
           >
             ▶ Watch Now
           </a>
-          
+          <a
             href={`/show/${show.id}`}
             style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: '600', fontSize: '15px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)'}}
           >
