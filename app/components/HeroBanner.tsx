@@ -48,7 +48,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
               ▶ Watch Now
             </a>
             <a
-              href={`/show/${show.id}`}
+              href="/mylist" 
               style={{display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '13px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)'}}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
