@@ -18,7 +18,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
 
   return (
     <div style={{padding: '12px 16px 20px 16px'}}>
-      <div style={{position: 'relative', width: '100%', height: '400px', overflow: 'hidden', borderRadius: '16px'}}>
+      <div style={{position: 'relative', width: '100%', height: '280px', overflow: 'hidden', borderRadius: '16px'}}>
 
         {/* Backdrop image */}
         <div style={{position: 'absolute', inset: 0}}>
@@ -29,16 +29,13 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
           />
         </div>
 
-        {/* Subtle bottom gradient so text is readable */}
-        <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)'}}/>
-
         {/* Content */}
-        <div style={{position: 'absolute', bottom: '32px', left: '28px', maxWidth: '420px'}}>
-          <div style={{fontFamily: 'Playfair Display, serif', fontSize: '36px', fontWeight: '700', color: '#fff', lineHeight: 1.15, marginBottom: '10px', textShadow: '0 4px 12px rgba(0,0,0,0.8)'}}>
+        <div style={{position: 'absolute', bottom: '24px', left: '24px', maxWidth: '380px'}}>
+          <div style={{fontFamily: 'Playfair Display, serif', fontSize: '28px', fontWeight: '700', color: '#fff', lineHeight: 1.15, marginBottom: '10px', textShadow: '0 4px 12px rgba(0,0,0,0.9)'}}>
             {show.title}
           </div>
 
-          <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6, marginBottom: '20px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textShadow: '0 2px 6px rgba(0,0,0,0.8)'}}>
+          <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.88)', lineHeight: 1.6, marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textShadow: '0 2px 6px rgba(0,0,0,0.8)'}}>
             {show.description}
           </div>
 
@@ -46,15 +43,15 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
           <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
             <a
               href={`/show/${show.id}`}
-              style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '8px', background: '#FB7185', color: '#fff', fontWeight: '700', fontSize: '14px', textDecoration: 'none'}}
+              style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 20px', borderRadius: '8px', background: '#FB7185', color: '#fff', fontWeight: '700', fontSize: '13px', textDecoration: 'none'}}
             >
               ▶ Watch Now
             </a>
             <a
               href={`/show/${show.id}`}
-              style={{display: 'flex', alignItems: 'center', gap: '7px', padding: '10px 18px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '14px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)'}}
+              style={{display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '13px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)'}}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
               </svg>
               My List
@@ -64,7 +61,7 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
 
         {/* Dot indicators */}
         {shows.length > 1 && (
-          <div style={{position: 'absolute', bottom: '14px', right: '20px', display: 'flex', gap: '6px'}}>
+          <div style={{position: 'absolute', bottom: '14px', right: '16px', display: 'flex', gap: '6px'}}>
             {shows.map((_: any, i: number) => (
               <button
                 key={i}
