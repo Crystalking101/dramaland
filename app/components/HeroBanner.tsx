@@ -1,8 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { createClient } from '../../lib/supabase'
 
 export default function HeroBanner({ shows }: { shows: any[] }) {
   const [current, setCurrent] = useState(0)
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (shows.length <= 1) return
@@ -12,9 +15,41 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
     return () => clearInterval(timer)
   }, [shows.length])
 
+  useEffect(() => {
+    setSaved(false)
+  }, [current])
+
   if (!shows || shows.length === 0) return null
 
   const show = shows[current]
+
+  async function handleSave() {
+    setSaving(true)
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session?.user) {
+      window.location.href = '/signin'
+      return
+    }
+
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Watchlist`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=ignore-duplicates',
+        },
+        body: JSON.stringify({ user_id: session.user.id, show_id: show.id }),
+      }
+    )
+
+    setSaved(true)
+    setSaving(false)
+  }
 
   return (
     <div style={{padding: '30px 32px 20px 32px'}}>
@@ -47,15 +82,16 @@ export default function HeroBanner({ shows }: { shows: any[] }) {
             >
               ▶ Watch Now
             </a>
-            <a
-              href="/mylist" 
-              style={{display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', borderRadius: '8px', background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '13px', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)'}}
+            <button
+              onClick={handleSave}
+              disabled={saving || saved}
+              style={{display: 'flex', alignItems: 'center', gap: '7px', padding: '9px 16px', borderRadius: '8px', background: saved ? 'rgba(251,113,133,0.3)' : 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: '600', fontSize: '13px', border: saved ? '1px solid #FB7185' : '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)', cursor: saving ? 'wait' : 'pointer'}}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill={saved ? '#FB7185' : 'none'} stroke={saved ? '#FB7185' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
               </svg>
-              My List
-            </a>
+              {saving ? 'Saving...' : saved ? 'Saved!' : 'My List'}
+            </button>
           </div>
         </div>
 
