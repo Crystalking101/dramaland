@@ -260,26 +260,26 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     loadComments()
   }
 
-  // Detects YouTube or Dailymotion and returns embed URL
-  function getEmbedUrl(url: string): { embedUrl: string; type: 'youtube' | 'dailymotion' } | null {
+  // Detects YouTube, Dailymotion, or dai.ly and returns correct embed URL
+  function getEmbedUrl(url: string): string | null {
     if (!url) return null
 
-    // YouTube
+    // YouTube - youtu.be or youtube.com
     const ytMatch = url.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
     if (ytMatch) {
-      return {
-        embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`,
-        type: 'youtube'
-      }
+      return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`
     }
 
-    // Dailymotion
-    const dmMatch = url.match(/dailymotion\.com\/(?:video|embed\/video)\/([^/?&]+)/)
+    // Dailymotion full URL - dailymotion.com/video/ID
+    const dmMatch = url.match(/dailymotion\.com\/(?:video|embed\/video)\/([^/?&#]+)/)
     if (dmMatch) {
-      return {
-        embedUrl: `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`,
-        type: 'dailymotion'
-      }
+      return `https://geo.dailymotion.com/player.html?video=${dmMatch[1]}`
+    }
+
+    // Dailymotion short URL - dai.ly/ID
+    const daiMatch = url.match(/dai\.ly\/([^/?&#]+)/)
+    if (daiMatch) {
+      return `https://geo.dailymotion.com/player.html?video=${daiMatch[1]}`
     }
 
     return null
@@ -328,7 +328,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   )
 
   const currentEpisode = episodes[currentEp]
-  const embedInfo = currentEpisode ? getEmbedUrl(currentEpisode.video_url) : null
+  const embedUrl = currentEpisode ? getEmbedUrl(currentEpisode.video_url) : null
   const isAdmin = userEmail === ADMIN_EMAIL
 
   const allTags = [
@@ -341,14 +341,14 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       <Nav/>
 
       <div className="player-wrap">
-        {embedInfo ? (
+        {embedUrl ? (
           <iframe
             width="100%"
             height="100%"
-            src={embedInfo.embedUrl}
+            src={embedUrl}
             title={currentEpisode?.title || 'Episode'}
             frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
           />
