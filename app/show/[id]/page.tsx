@@ -53,7 +53,6 @@ async function getSimilarShows(currentId: string, genre: string) {
     return res.json()
   }
 
-  // Get first genre tag to match on
   const firstGenre = genre.split(',')[0].trim()
 
   const res = await fetch(
@@ -69,7 +68,6 @@ async function getSimilarShows(currentId: string, genre: string) {
   if (!res.ok) return []
   const data = await res.json()
 
-  // If not enough genre matches, fill with random shows
   if (data.length < 3) {
     const fallback = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
@@ -262,9 +260,29 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     loadComments()
   }
 
-  function getYouTubeId(url: string) {
-    const match = url?.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
-    return match ? match[1] : null
+  // Detects YouTube or Dailymotion and returns embed URL
+  function getEmbedUrl(url: string): { embedUrl: string; type: 'youtube' | 'dailymotion' } | null {
+    if (!url) return null
+
+    // YouTube
+    const ytMatch = url.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
+    if (ytMatch) {
+      return {
+        embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`,
+        type: 'youtube'
+      }
+    }
+
+    // Dailymotion
+    const dmMatch = url.match(/dailymotion\.com\/(?:video|embed\/video)\/([^/?&]+)/)
+    if (dmMatch) {
+      return {
+        embedUrl: `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`,
+        type: 'dailymotion'
+      }
+    }
+
+    return null
   }
 
   function getInitials(name: string) {
@@ -310,7 +328,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
   )
 
   const currentEpisode = episodes[currentEp]
-  const videoId = currentEpisode ? getYouTubeId(currentEpisode.video_url) : null
+  const embedInfo = currentEpisode ? getEmbedUrl(currentEpisode.video_url) : null
   const isAdmin = userEmail === ADMIN_EMAIL
 
   const allTags = [
@@ -323,13 +341,13 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
       <Nav/>
 
       <div className="player-wrap">
-        {videoId ? (
+        {embedInfo ? (
           <iframe
             width="100%"
             height="100%"
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+            src={embedInfo.embedUrl}
             title={currentEpisode?.title || 'Episode'}
-            frameBorder="auto"
+            frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             style={{position:'absolute', inset:0, width:'100%', height:'100%'}}
