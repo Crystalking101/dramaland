@@ -12,12 +12,6 @@ export default function About() {
         <div className="hero-subtitle">Bringing Asian Drama&apos;s to the world</div>
       </div>
 
-      <div className="stats-row">
-        <div className="stat"><div className="stat-number">10K+</div><div className="stat-label">Episodes Available</div></div>
-        <div className="stat"><div className="stat-number">500+</div><div className="stat-label">Shows & Series</div></div>
-        <div className="stat"><div className="stat-number">100%</div><div className="stat-label">Free to Watch</div></div>
-      </div>
-
       <div className="content-section">
         <div className="section-label">Our Mission</div>
         <div className="mission-statement">Make the world&apos;s best Asian dramas accessible to everyone, everywhere, for free.</div>
