@@ -18,6 +18,7 @@ export default function About() {
         <div className="section-body">Drama Land was built for drama lovers who are tired of hunting across a dozen different platforms to find their next obsession. We believe the best Chinese and Asian dramas deserve a dedicated home where fans can discover, watch, and share the stories they love without barriers.</div>
       </div>
 
+
       <div className="values-grid">
         <div className="value-card">
           <div className="value-title">Quality Curation</div>
