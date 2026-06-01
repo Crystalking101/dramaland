@@ -1,12 +1,14 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '../../lib/supabase'
 
 export default function Nav() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -21,6 +23,12 @@ export default function Nav() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    if (searchOpen && searchRef.current) {
+      searchRef.current.focus()
+    }
+  }, [searchOpen])
+
   async function signOut() {
     await supabase.auth.signOut()
     setUser(null)
@@ -32,6 +40,10 @@ export default function Nav() {
   function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && searchQuery.trim()) {
       window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+    }
+    if (e.key === 'Escape') {
+      setSearchOpen(false)
+      setSearchQuery('')
     }
   }
 
@@ -45,33 +57,50 @@ export default function Nav() {
             <a href="/">Home</a>
             <a href="/recent">New</a>
             <a href="/trending">Popular</a>
-            <a href="/search">Updated</a>
           </div>
         </div>
 
         <div className="nav-right">
-          {/* Desktop search */}
-          <div className="search">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-              <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search dramas..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
-              style={{
-                background: 'none',
-                border: 'none',
-                outline: 'none',
-                color: '#fff',
-                fontSize: '13px',
-                width: '140px',
-                fontFamily: 'inherit',
+          {/* Search - collapses to icon on desktop */}
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px', position: 'relative'}}>
+            {searchOpen && (
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search titles, actors, genres..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  color: '#fff',
+                  fontSize: '13px',
+                  width: '220px',
+                  fontFamily: 'inherit',
+                  padding: '7px 12px',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            )}
+            <button
+              onClick={() => {
+                if (searchOpen && searchQuery.trim()) {
+                  window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+                } else {
+                  setSearchOpen(!searchOpen)
+                  if (searchOpen) setSearchQuery('')
+                }
               }}
-            />
+              style={{background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: '#fff'}}
+            >
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5"/>
+                <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
 
           {/* Desktop user icon */}
@@ -131,12 +160,10 @@ export default function Nav() {
             className="hamburger-btn"
           >
             {menuOpen ? (
-              // X icon
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             ) : (
-              // Hamburger icon
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M3 6h18M3 12h18M3 18h18"/>
               </svg>
@@ -173,7 +200,7 @@ export default function Nav() {
             </svg>
             <input
               type="text"
-              placeholder="Search dramas..."
+              placeholder="Search titles, actors, genres..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
@@ -189,12 +216,10 @@ export default function Nav() {
             />
           </div>
 
-          {/* Nav links */}
           {[
             { label: 'Home', href: '/' },
             { label: 'New', href: '/recent' },
             { label: 'Popular', href: '/trending' },
-            { label: 'Updated', href: '/search' },
             { label: 'My List', href: '/mylist' },
           ].map(link => (
             <a
@@ -214,7 +239,6 @@ export default function Nav() {
             </a>
           ))}
 
-          {/* Sign in / Sign out */}
           {user ? (
             <div style={{marginTop: '4px'}}>
               <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.4)', padding: '8px 4px'}}>
@@ -260,12 +284,10 @@ export default function Nav() {
         </div>
       )}
 
-      {/* CSS to show hamburger on mobile, hide on desktop */}
       <style>{`
         @media (max-width: 640px) {
           .hamburger-btn { display: block !important; }
           .nav-links { display: none !important; }
-          .search { display: none !important; }
           .user-wrap { display: none !important; }
         }
         @media (min-width: 641px) {

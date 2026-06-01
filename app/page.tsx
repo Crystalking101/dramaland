@@ -49,6 +49,72 @@ function ShowRow({ title, shows, seeAllHref }: { title: string, shows: any[], se
   )
 }
 
+function Top10Row({ shows }: { shows: any[] }) {
+  if (shows.length === 0) return null
+  const top10 = shows.slice(0, 10)
+  return (
+    <div className="section">
+      <div className="section-header">
+        <div className="section-title">Top 10 on Drama Land Today</div>
+      </div>
+      <div className="cards-row" style={{overflow: 'visible'}}>
+        {top10.map((show: any, index: number) => (
+          <a
+            href={`/show/${show.id}`}
+            key={show.id}
+            style={{
+              textDecoration: 'none',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'flex-end',
+              flexShrink: 0,
+              marginLeft: index === 0 ? '0' : '-18px',
+            }}
+          >
+            {/* Big number */}
+            <div style={{
+              position: 'absolute',
+              left: '-28px',
+              bottom: '-8px',
+              fontSize: '130px',
+              fontWeight: '900',
+              lineHeight: 1,
+              color: '#0E0A0D',
+              WebkitTextStroke: '3px rgba(255,255,255,0.15)',
+              zIndex: 0,
+              userSelect: 'none',
+              fontFamily: 'Arial Black, sans-serif',
+            }}>
+              {index + 1}
+            </div>
+            {/* Card */}
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              width: '130px',
+              height: '190px',
+              flexShrink: 0,
+              borderRadius: '10px',
+              overflow: 'hidden',
+              boxShadow: '4px 4px 20px rgba(0,0,0,0.6)',
+            }}>
+              {show.thumbnail_url ? (
+                <img
+                  src={show.thumbnail_url}
+                  alt={show.title}
+                  style={{width:'100%', height:'100%', objectFit:'cover'}}
+                />
+              ) : (
+                <div className="card-poster-bg p1" style={{width:'100%', height:'100%'}}/>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function Home() {
   const shows = await getShows()
 
@@ -63,7 +129,7 @@ export default async function Home() {
     <>
       <Nav/>
       <HeroBanner shows={featured} />
-      <ShowRow title="Drama Land Hot Picks 🔥" shows={hotPicks} />
+      <Top10Row shows={hotPicks} />
       <ShowRow title="Trending" shows={trending} seeAllHref="/trending" />
       <ShowRow title="Fan Favorites ⭐" shows={fanFavorites} />
       <ShowRow title="Recently Added" shows={recentlyAdded} seeAllHref="/recent" />
