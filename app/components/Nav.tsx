@@ -53,6 +53,7 @@ export default function Nav() {
     { label: 'Home', href: '/' },
     { label: 'New', href: '/recent' },
     { label: 'Popular', href: '/trending' },
+    { label: 'My List', href: '/mylist' },
   ]
 
   function isActive(href: string) {
@@ -62,7 +63,7 @@ export default function Nav() {
 
   return (
     <>
-      <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px', border: 'none', background: 'rgba(14,10,13,0.95)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)'}}>
+      <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px', border: 'none', background: 'rgba(14,10,13,0.95)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', position: 'relative', zIndex: 100}}>
         <div className="nav-left">
           <a href="/" style={{textDecoration: 'none'}}><div className="logo">Drama Land</div></a>
 
@@ -136,7 +137,7 @@ export default function Nav() {
           </div>
 
           {/* Desktop user icon */}
-          <div className="user-wrap">
+          <div className="user-wrap" style={{position: 'relative', zIndex: 200}}>
             {user ? (
               <>
                 <div className="user-icon" onClick={() => setDropdownOpen(!dropdownOpen)}>
@@ -146,7 +147,7 @@ export default function Nav() {
                   </svg>
                 </div>
                 {dropdownOpen && (
-                  <div className="user-dropdown">
+                  <div className="user-dropdown" style={{zIndex: 9999}}>
                     <div className="dropdown-user-info">
                       <div className="dropdown-name">{user.user_metadata?.full_name || 'Drama Fan'}</div>
                       <div className="dropdown-email">{user.email}</div>
@@ -213,6 +214,8 @@ export default function Nav() {
           display: 'flex',
           flexDirection: 'column',
           gap: '4px',
+          position: 'relative',
+          zIndex: 100,
         }}
         className="mobile-menu"
         >
@@ -329,4 +332,3 @@ export default function Nav() {
     </>
   )
 }
-
