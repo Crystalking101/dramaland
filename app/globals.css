@@ -169,7 +169,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 .dropdown-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 2px; }
 .dropdown-email { font-size: 11px; color: rgba(255,255,255,0.4); }
 /* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   nav { padding: 8px 16px; }
   .logo { font-size: 16px; margin-right: 8px; }
   .nav-links { display: flex; }
