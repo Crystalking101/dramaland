@@ -128,9 +128,15 @@ export default async function Home() {
 
   const featured = shows.filter((s: any) => s.is_featured && s.backdrop_url)
   const hotPicks = shows.filter((s: any) => s.is_hot_pick)
-  const trending = shows.slice(0, 20)
+
+  // Trending — shows from the middle of the list (not newest, not oldest)
+  const trending = shows.slice(10, 30)
+
   const fanFavorites = shows.filter((s: any) => s.is_fan_favorite)
+
+  // Recently Added — always the newest shows (first 20 since sorted by created_at.desc)
   const recentlyAdded = shows.slice(0, 20)
+
   const spicy = shows.filter((s: any) => s.is_spicy)
 
   return (
