@@ -170,7 +170,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 .dropdown-email { font-size: 11px; color: rgba(255,255,255,0.4); }
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
-  nav { padding: 8px 12px; }
+  nav { padding: 8px 16px; }
   .logo { font-size: 14px; margin-right: 4px; }
   .nav-links { display: flex; }
   .nav-links a { font-size: 10px; padding: 4px 5px; }
@@ -180,7 +180,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
   .user-icon { width: 28px; height: 28px; flex-shrink: 0; }
   .cards-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .search-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 16px 40px; }
+  .search-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 12px 40px; }
   .section { padding: 20px 16px 12px; }
   .section-title { font-size: 17px; }
   .player-wrap { height: 240px; }
