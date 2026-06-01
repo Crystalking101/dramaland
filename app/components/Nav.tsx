@@ -66,23 +66,24 @@ export default function Nav() {
         <div className="nav-left">
           <a href="/" style={{textDecoration: 'none'}}><div className="logo">Drama Land</div></a>
 
-          {/* Desktop links with active pill */}
+          {/* Desktop links with active pink pill */}
           <div className="nav-links">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
                 style={{
-                  fontSize: '14px',
-                  color: '#ffffff',
+                  fontSize: '15px',
                   cursor: 'pointer',
-                  padding: '7px 16px',
+                  padding: '8px 20px',
                   borderRadius: '20px',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
-                  background: isActive(link.href) ? 'rgba(251,113,133,0.25)' : 'transparent',
+                  letterSpacing: '0.3px',
+                  background: isActive(link.href) ? 'rgba(251,113,133,0.2)' : 'transparent',
                   color: isActive(link.href) ? '#FB7185' : '#ffffff',
                   fontWeight: isActive(link.href) ? '600' : '400',
+                  border: isActive(link.href) ? '1px solid rgba(251,113,133,0.4)' : '1px solid transparent',
                 }}
               >
                 {link.label}
@@ -215,7 +216,6 @@ export default function Nav() {
         }}
         className="mobile-menu"
         >
-          {/* Mobile search */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -329,3 +329,4 @@ export default function Nav() {
     </>
   )
 }
+
