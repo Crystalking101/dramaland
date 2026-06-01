@@ -216,3 +216,4 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 @media (max-width: 768px) { .search-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 0 12px 40px !important; } .card-poster { height: 140px !important; } .card { width: 100% !important; } }
 @media (max-width: 768px) { .card-poster { height: 120px !important; } .cards-row .card { width: 130px !important; } nav { padding: 10px 16px !important; overflow: visible !important; } .logo { font-size: 16px !important; } }
 @media (max-width: 768px) { .search-grid .card-poster { height: 120px !important; } }
+@media (max-width: 768px) { .search-grid .card-poster { height: 180px !important; } }
