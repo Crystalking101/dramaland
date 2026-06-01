@@ -169,46 +169,46 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 .dropdown-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 2px; }
 .dropdown-email { font-size: 11px; color: rgba(255,255,255,0.4); }
 /* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 640px) {
-  nav { padding: 8px 16px; }
-  .logo { font-size: 16px; margin-right: 8px; }
-  .nav-links { display: flex; }
-  .nav-links a { font-size: 10px; padding: 4px 5px; }
-  .search { min-width: unset; width: 110px; padding: 5px 8px; font-size: 10px; margin-right: 4px; overflow: hidden; }
-  .search input { font-size: 9px; width: 75px; }
-  .search svg { flex-shrink: 0; }
-  .user-icon { width: 28px; height: 28px; flex-shrink: 0; }
-  .cards-row { gap: 8px; }
-  .cards-row .card { width: 120px; }
-  .card-poster { height: 160px; }
-  .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .search-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 12px 40px; }
-  .section { padding: 20px 16px 12px; }
-  .section-title { font-size: 17px; }
-  .player-wrap { height: 240px; }
-  .below-player { padding: 16px; }
-  .show-title { font-size: 20px; }
-  .show-desc { font-size: 13px; }
-  .search-results-header { padding: 20px 16px 16px; }
-  .search-results-wrap { max-width: 100%; }
-  .library-hero { padding: 32px 16px 0; }
-  .library-title { font-size: 28px; }
-  .tabs { margin: 0 16px; }
-  .tab { padding: 10px 16px; font-size: 13px; }
-  .library-content { padding: 24px 16px; }
-  .history-thumb { width: 60px; height: 42px; }
-  .history-title { font-size: 13px; }
-  .page-hero { padding: 40px 16px 32px; }
-  .page-title { font-size: 32px; }
-  .hero-title { font-size: 30px; }
-  .hero-subtitle { font-size: 16px; }
-  .stats-row { grid-template-columns: 1fr; }
-  .stat { border-right: none; border-bottom: 0.5px solid rgba(255,255,255,0.06); }
-  .values-grid { grid-template-columns: 1fr; padding: 32px 16px; }
-  .legal-body { padding: 32px 16px; }
-  .faq-body { padding: 32px 16px; }
-  .content-section { padding: 36px 16px; }
-  .contact-cta { margin: 0 16px 32px; padding: 24px; }
-  footer { padding: 24px 16px; }
-  .footer-links { gap: 4px 16px; }
-}
+@media (max-width: 768px) {
+    nav { padding: 8px 16px; }
+    .logo { font-size: 16px; margin-right: 8px; }
+    .nav-links { display: flex; }
+    .nav-links a { font-size: 10px; padding: 4px 5px; }
+    .search { min-width: unset; width: 110px; padding: 5px 8px; font-size: 10px; margin-right: 4px; overflow: hidden; }
+    .search input { font-size: 9px; width: 75px; }
+    .search svg { flex-shrink: 0; }
+    .user-icon { width: 28px; height: 28px; flex-shrink: 0; }
+    .cards-row { gap: 8px; }
+    .cards-row .card { width: 130px; }
+    .card-poster { height: 120px; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .search-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 12px 40px; }
+    .section { padding: 20px 16px 12px; }
+    .section-title { font-size: 17px; }
+    .player-wrap { height: 240px; }
+    .below-player { padding: 16px; }
+    .show-title { font-size: 20px; }
+    .show-desc { font-size: 13px; }
+    .search-results-header { padding: 20px 16px 16px; }
+    .search-results-wrap { max-width: 100%; }
+    .library-hero { padding: 32px 16px 0; }
+    .library-title { font-size: 28px; }
+    .tabs { margin: 0 16px; }
+    .tab { padding: 10px 16px; font-size: 13px; }
+    .library-content { padding: 24px 16px; }
+    .history-thumb { width: 60px; height: 42px; }
+    .history-title { font-size: 13px; }
+    .page-hero { padding: 40px 16px 32px; }
+    .page-title { font-size: 32px; }
+    .hero-title { font-size: 30px; }
+    .hero-subtitle { font-size: 16px; }
+    .stats-row { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 0.5px solid rgba(255,255,255,0.06); }
+    .values-grid { grid-template-columns: 1fr; padding: 32px 16px; }
+    .legal-body { padding: 32px 16px; }
+    .faq-body { padding: 32px 16px; }
+    .content-section { padding: 36px 16px; }
+    .contact-cta { margin: 0 16px 32px; padding: 24px; }
+    footer { padding: 24px 16px; }
+    .footer-links { gap: 4px 16px; }
+  }
