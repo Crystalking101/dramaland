@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { createClient } from '../../lib/supabase'
 
 export default function Nav() {
@@ -9,6 +10,7 @@ export default function Nav() {
   const [user, setUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
+  const pathname = usePathname()
   const supabase = createClient()
 
   useEffect(() => {
@@ -47,21 +49,49 @@ export default function Nav() {
     }
   }
 
+  const navLinks = [
+    { label: 'Home', href: '/' },
+    { label: 'New', href: '/recent' },
+    { label: 'Popular', href: '/trending' },
+  ]
+
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
+
   return (
     <>
-      <nav>
+      <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px', border: 'none', background: 'rgba(14,10,13,0.95)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)'}}>
         <div className="nav-left">
           <a href="/" style={{textDecoration: 'none'}}><div className="logo">Drama Land</div></a>
-          {/* Desktop links */}
+
+          {/* Desktop links with active pill */}
           <div className="nav-links">
-            <a href="/">Home</a>
-            <a href="/recent">New</a>
-            <a href="/trending">Popular</a>
+            {navLinks.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                style={{
+                  fontSize: '14px',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '7px 16px',
+                  borderRadius: '20px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s',
+                  background: isActive(link.href) ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  fontWeight: isActive(link.href) ? '600' : '400',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
 
         <div className="nav-right">
-          {/* Search - collapses to icon on desktop */}
+          {/* Search icon */}
           <div style={{display: 'flex', alignItems: 'center', gap: '8px', position: 'relative'}}>
             {searchOpen && (
               <input
@@ -227,12 +257,13 @@ export default function Nav() {
               href={link.href}
               onClick={() => setMenuOpen(false)}
               style={{
-                color: '#F0EEE8',
+                color: isActive(link.href) ? '#FB7185' : '#F0EEE8',
                 textDecoration: 'none',
                 fontSize: '15px',
                 padding: '12px 4px',
                 borderBottom: '1px solid rgba(255,255,255,0.06)',
                 display: 'block',
+                fontWeight: isActive(link.href) ? '600' : '400',
               }}
             >
               {link.label}
