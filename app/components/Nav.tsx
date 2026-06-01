@@ -80,7 +80,8 @@ export default function Nav() {
                   borderRadius: '20px',
                   textDecoration: 'none',
                   transition: 'all 0.2s',
-                  background: isActive(link.href) ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  background: isActive(link.href) ? 'rgba(251,113,133,0.25)' : 'transparent',
+                  color: isActive(link.href) ? '#FB7185' : '#ffffff',
                   fontWeight: isActive(link.href) ? '600' : '400',
                 }}
               >
