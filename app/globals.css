@@ -183,7 +183,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
   .cards-row .card { width: 120px; }
   .card-poster { height: 130px; }
   .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .search-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 12px 40px; }
+  .search-grid .card-poster { aspect-ratio: 2/3; height: auto; }
   .section { padding: 20px 16px 12px; }
   .section-title { font-size: 17px; }
   .player-wrap { height: 240px; }
