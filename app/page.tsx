@@ -49,21 +49,101 @@ function ShowRow({ title, shows, seeAllHref }: { title: string, shows: any[], se
   )
 }
 
+function Top10Row({ shows }: { shows: any[] }) {
+  if (shows.length === 0) return null
+  const top10 = shows.slice(0, 10)
+  return (
+    <div className="section">
+      <div className="section-header">
+        <div className="section-title">Top 10 on Drama Land Today</div>
+      </div>
+      <div style={{
+        display: 'flex',
+        gap: '0px',
+        overflowX: 'auto',
+        paddingBottom: '16px',
+        paddingLeft: '4px',
+        paddingTop: '8px',
+      }}>
+        {top10.map((show: any, index: number) => (
+          <a
+            href={`/show/${show.id}`}
+            key={show.id}
+            style={{
+              textDecoration: 'none',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'flex-end',
+              flexShrink: 0,
+              marginRight: '8px',
+            }}
+          >
+            {/* Big number */}
+            <div style={{
+              fontSize: '160px',
+              fontWeight: '900',
+              lineHeight: 1,
+              fontFamily: 'Arial Black, Impact, sans-serif',
+              color: 'transparent',
+              WebkitTextStroke: '3px rgba(255,255,255,0.6)',
+              position: 'relative',
+              zIndex: 0,
+              userSelect: 'none',
+              marginRight: '-30px',
+              paddingBottom: '10px',
+              flexShrink: 0,
+            }}>
+              {index + 1}
+            </div>
+            {/* Card */}
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              width: '115px',
+              height: '170px',
+              flexShrink: 0,
+              borderRadius: '10px',
+              overflow: 'hidden',
+              boxShadow: '4px 4px 20px rgba(0,0,0,0.8)',
+            }}>
+              {show.thumbnail_url ? (
+                <img
+                  src={show.thumbnail_url}
+                  alt={show.title}
+                  style={{width:'100%', height:'100%', objectFit:'cover'}}
+                />
+              ) : (
+                <div className="card-poster-bg p1" style={{width:'100%', height:'100%'}}/>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function Home() {
   const shows = await getShows()
 
   const featured = shows.filter((s: any) => s.is_featured && s.backdrop_url)
   const hotPicks = shows.filter((s: any) => s.is_hot_pick)
-  const trending = shows.slice(0, 20)
+
+  // Trending — shows from the middle of the list (not newest, not oldest)
+  const trending = shows.slice(10, 30)
+
   const fanFavorites = shows.filter((s: any) => s.is_fan_favorite)
+
+  // Recently Added — always the newest shows (first 20 since sorted by created_at.desc)
   const recentlyAdded = shows.slice(0, 20)
+
   const spicy = shows.filter((s: any) => s.is_spicy)
 
   return (
     <>
       <Nav/>
       <HeroBanner shows={featured} />
-      <ShowRow title="Drama Land Hot Picks 🔥" shows={hotPicks} />
+      <Top10Row shows={hotPicks} />
       <ShowRow title="Trending" shows={trending} seeAllHref="/trending" />
       <ShowRow title="Fan Favorites ⭐" shows={fanFavorites} />
       <ShowRow title="Recently Added" shows={recentlyAdded} seeAllHref="/recent" />

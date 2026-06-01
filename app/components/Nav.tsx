@@ -1,12 +1,16 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { createClient } from '../../lib/supabase'
 
 export default function Nav() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
+  const pathname = usePathname()
   const supabase = createClient()
 
   useEffect(() => {
@@ -21,6 +25,12 @@ export default function Nav() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    if (searchOpen && searchRef.current) {
+      searchRef.current.focus()
+    }
+  }, [searchOpen])
+
   async function signOut() {
     await supabase.auth.signOut()
     setUser(null)
@@ -33,49 +43,101 @@ export default function Nav() {
     if (e.key === 'Enter' && searchQuery.trim()) {
       window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
     }
+    if (e.key === 'Escape') {
+      setSearchOpen(false)
+      setSearchQuery('')
+    }
+  }
+
+  const navLinks = [
+    { label: 'Home', href: '/' },
+    { label: 'New', href: '/recent' },
+    { label: 'Popular', href: '/trending' },
+    { label: 'My List', href: '/mylist' },
+  ]
+
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
   }
 
   return (
     <>
-      <nav>
+      <nav style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px', border: 'none', background: 'rgba(14,10,13,0.95)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', position: 'relative', zIndex: 100}}>
         <div className="nav-left">
           <a href="/" style={{textDecoration: 'none'}}><div className="logo">Drama Land</div></a>
-          {/* Desktop links */}
+
+          {/* Desktop links with active pink pill */}
           <div className="nav-links">
-            <a href="/">Home</a>
-            <a href="/recent">New</a>
-            <a href="/trending">Popular</a>
-            <a href="/search">Updated</a>
+            {navLinks.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                style={{
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  padding: '8px 20px',
+                  borderRadius: '20px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s',
+                  letterSpacing: '0.3px',
+                  background: isActive(link.href) ? 'rgba(251,113,133,0.2)' : 'transparent',
+                  color: isActive(link.href) ? '#FB7185' : '#ffffff',
+                  fontWeight: isActive(link.href) ? '600' : '400',
+                  border: isActive(link.href) ? '1px solid rgba(251,113,133,0.4)' : '1px solid transparent',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
 
         <div className="nav-right">
-          {/* Desktop search */}
-          <div className="search">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-              <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search dramas..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
-              style={{
-                background: 'none',
-                border: 'none',
-                outline: 'none',
-                color: '#fff',
-                fontSize: '13px',
-                width: '140px',
-                fontFamily: 'inherit',
+          {/* Search icon */}
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px', position: 'relative'}}>
+            {searchOpen && (
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search titles, actors, genres..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  color: '#fff',
+                  fontSize: '13px',
+                  width: '220px',
+                  fontFamily: 'inherit',
+                  padding: '7px 12px',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            )}
+            <button
+              onClick={() => {
+                if (searchOpen && searchQuery.trim()) {
+                  window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+                } else {
+                  setSearchOpen(!searchOpen)
+                  if (searchOpen) setSearchQuery('')
+                }
               }}
-            />
+              style={{background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: '#fff'}}
+            >
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5"/>
+                <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
 
           {/* Desktop user icon */}
-          <div className="user-wrap">
+          <div className="user-wrap" style={{position: 'relative', zIndex: 200}}>
             {user ? (
               <>
                 <div className="user-icon" onClick={() => setDropdownOpen(!dropdownOpen)}>
@@ -85,7 +147,7 @@ export default function Nav() {
                   </svg>
                 </div>
                 {dropdownOpen && (
-                  <div className="user-dropdown">
+                  <div className="user-dropdown" style={{zIndex: 9999}}>
                     <div className="dropdown-user-info">
                       <div className="dropdown-name">{user.user_metadata?.full_name || 'Drama Fan'}</div>
                       <div className="dropdown-email">{user.email}</div>
@@ -131,12 +193,10 @@ export default function Nav() {
             className="hamburger-btn"
           >
             {menuOpen ? (
-              // X icon
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             ) : (
-              // Hamburger icon
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M3 6h18M3 12h18M3 18h18"/>
               </svg>
@@ -154,10 +214,11 @@ export default function Nav() {
           display: 'flex',
           flexDirection: 'column',
           gap: '4px',
+          position: 'relative',
+          zIndex: 100,
         }}
         className="mobile-menu"
         >
-          {/* Mobile search */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -173,7 +234,7 @@ export default function Nav() {
             </svg>
             <input
               type="text"
-              placeholder="Search dramas..."
+              placeholder="Search titles, actors, genres..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
@@ -189,12 +250,10 @@ export default function Nav() {
             />
           </div>
 
-          {/* Nav links */}
           {[
             { label: 'Home', href: '/' },
             { label: 'New', href: '/recent' },
             { label: 'Popular', href: '/trending' },
-            { label: 'Updated', href: '/search' },
             { label: 'My List', href: '/mylist' },
           ].map(link => (
             <a
@@ -202,19 +261,19 @@ export default function Nav() {
               href={link.href}
               onClick={() => setMenuOpen(false)}
               style={{
-                color: '#F0EEE8',
+                color: isActive(link.href) ? '#FB7185' : '#F0EEE8',
                 textDecoration: 'none',
                 fontSize: '15px',
                 padding: '12px 4px',
                 borderBottom: '1px solid rgba(255,255,255,0.06)',
                 display: 'block',
+                fontWeight: isActive(link.href) ? '600' : '400',
               }}
             >
               {link.label}
             </a>
           ))}
 
-          {/* Sign in / Sign out */}
           {user ? (
             <div style={{marginTop: '4px'}}>
               <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.4)', padding: '8px 4px'}}>
@@ -260,12 +319,10 @@ export default function Nav() {
         </div>
       )}
 
-      {/* CSS to show hamburger on mobile, hide on desktop */}
       <style>{`
         @media (max-width: 640px) {
           .hamburger-btn { display: block !important; }
           .nav-links { display: none !important; }
-          .search { display: none !important; }
           .user-wrap { display: none !important; }
         }
         @media (min-width: 641px) {

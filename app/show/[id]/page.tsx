@@ -260,26 +260,37 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     loadComments()
   }
 
-  // Detects YouTube, Dailymotion, or dai.ly and returns correct embed URL
+  // Detects YouTube, Dailymotion, dai.ly, Rumble, or Facebook and returns correct embed URL
   function getEmbedUrl(url: string): string | null {
     if (!url) return null
 
-    // YouTube - youtu.be or youtube.com
+    // YouTube
     const ytMatch = url.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)
     if (ytMatch) {
       return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`
     }
 
-    // Dailymotion full URL - dailymotion.com/video/ID
+    // Dailymotion full URL
     const dmMatch = url.match(/dailymotion\.com\/(?:video|embed\/video)\/([^/?&#]+)/)
     if (dmMatch) {
       return `https://geo.dailymotion.com/player.html?video=${dmMatch[1]}`
     }
 
-    // Dailymotion short URL - dai.ly/ID
+    // Dailymotion short URL
     const daiMatch = url.match(/dai\.ly\/([^/?&#]+)/)
     if (daiMatch) {
       return `https://geo.dailymotion.com/player.html?video=${daiMatch[1]}`
+    }
+
+    // Rumble embed URL
+    const rumbleMatch = url.match(/rumble\.com\/embed\/([a-z0-9]+)/)
+    if (rumbleMatch) {
+      return `https://rumble.com/embed/${rumbleMatch[1]}/`
+    }
+
+    // Facebook plugins video URL (paste the full src URL from the embed code)
+    if (url.includes('facebook.com/plugins/video.php')) {
+      return url
     }
 
     return null

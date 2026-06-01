@@ -12,17 +12,12 @@ export default function About() {
         <div className="hero-subtitle">Bringing Asian Drama&apos;s to the world</div>
       </div>
 
-      <div className="stats-row">
-        <div className="stat"><div className="stat-number">10K+</div><div className="stat-label">Episodes Available</div></div>
-        <div className="stat"><div className="stat-number">500+</div><div className="stat-label">Shows & Series</div></div>
-        <div className="stat"><div className="stat-number">100%</div><div className="stat-label">Free to Watch</div></div>
-      </div>
-
       <div className="content-section">
         <div className="section-label">Our Mission</div>
         <div className="mission-statement">Make the world&apos;s best Asian dramas accessible to everyone, everywhere, for free.</div>
         <div className="section-body">Drama Land was built for drama lovers who are tired of hunting across a dozen different platforms to find their next obsession. We believe the best Chinese and Asian dramas deserve a dedicated home where fans can discover, watch, and share the stories they love without barriers.</div>
       </div>
+
 
       <div className="values-grid">
         <div className="value-card">
