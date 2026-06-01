@@ -57,7 +57,14 @@ function Top10Row({ shows }: { shows: any[] }) {
       <div className="section-header">
         <div className="section-title">Top 10 on Drama Land Today</div>
       </div>
-      <div className="cards-row" style={{overflow: 'visible'}}>
+      <div style={{
+        display: 'flex',
+        gap: '0px',
+        overflowX: 'auto',
+        paddingBottom: '16px',
+        paddingLeft: '4px',
+        paddingTop: '8px',
+      }}>
         {top10.map((show: any, index: number) => (
           <a
             href={`/show/${show.id}`}
@@ -68,22 +75,23 @@ function Top10Row({ shows }: { shows: any[] }) {
               display: 'flex',
               alignItems: 'flex-end',
               flexShrink: 0,
-              marginLeft: index === 0 ? '0' : '-18px',
+              marginRight: '8px',
             }}
           >
             {/* Big number */}
             <div style={{
-              position: 'absolute',
-              left: '-28px',
-              bottom: '-8px',
-              fontSize: '130px',
+              fontSize: '160px',
               fontWeight: '900',
               lineHeight: 1,
-              color: '#0E0A0D',
-              WebkitTextStroke: '3px rgba(255,255,255,0.15)',
+              fontFamily: 'Arial Black, Impact, sans-serif',
+              color: 'transparent',
+              WebkitTextStroke: '3px rgba(255,255,255,0.6)',
+              position: 'relative',
               zIndex: 0,
               userSelect: 'none',
-              fontFamily: 'Arial Black, sans-serif',
+              marginRight: '-30px',
+              paddingBottom: '10px',
+              flexShrink: 0,
             }}>
               {index + 1}
             </div>
@@ -91,12 +99,12 @@ function Top10Row({ shows }: { shows: any[] }) {
             <div style={{
               position: 'relative',
               zIndex: 1,
-              width: '130px',
-              height: '190px',
+              width: '115px',
+              height: '170px',
               flexShrink: 0,
               borderRadius: '10px',
               overflow: 'hidden',
-              boxShadow: '4px 4px 20px rgba(0,0,0,0.6)',
+              boxShadow: '4px 4px 20px rgba(0,0,0,0.8)',
             }}>
               {show.thumbnail_url ? (
                 <img
