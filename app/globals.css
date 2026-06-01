@@ -111,7 +111,7 @@ footer { padding: 32px 28px; text-align: center; border-top: 0.5px solid rgba(25
 .btn-google { width: 100%; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.2s; font-family: inherit; }
 .btn-google:hover { background: rgba(255,255,255,0.12); }
 .modal-terms { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 20px; line-height: 1.7; }
-.player-wrap { position: relative; width: 100%; height: 420px; cursor: pointer; overflow: hidden; }
+.player-wrap { position: relative; width: 100%; height: 320px; cursor: pointer; overflow: hidden; }
 .player-bg { position: absolute; inset: 0; background: linear-gradient(135deg,#2D1B2E 0%,#1A0D1A 50%,#2A1020 100%); }
 .player-overlay { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(14,10,13,0.95) 0%,rgba(14,10,13,0.4) 100%); }
 .player-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
