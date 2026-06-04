@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function GET() {
   const res = await fetch(
@@ -31,18 +28,25 @@ export async function GET() {
   }
 
   if (broken.length > 0) {
-    await resend.emails.send({
-      from: 'Drama Land <onboarding@resend.dev>',
-      to: 'support@discoverdramaland.com', 
-      subject: `⚠️ ${broken.length} Broken Video Links on Drama Land`,
-      html: `
-        <h2>Broken Video Links</h2>
-        <p>${broken.length} broken links found out of ${shows.length} shows checked.</p>
-        <ul>
-          ${broken.map(b => `<li><strong>${b.title}</strong><br/>${b.url}</li>`).join('')}
-        </ul>
-        <p><a href="https://discoverdramaland.com/admin">Fix them in your admin panel</a></p>
-      `
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Drama Land <onboarding@resend.dev>',
+        to: 'support@discoverdramaland.com',
+        subject: `⚠️ ${broken.length} Broken Video Links on Drama Land`,
+        html: `
+          <h2>Broken Video Links</h2>
+          <p>${broken.length} broken links found out of ${shows.length} shows checked.</p>
+          <ul>
+            ${broken.map((b: any) => `<li><strong>${b.title}</strong><br/>${b.url}</li>`).join('')}
+          </ul>
+          <p><a href="https://discoverdramaland.com/admin">Fix them in your admin panel</a></p>
+        `
+      })
     })
   }
 
