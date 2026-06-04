@@ -12,22 +12,9 @@ export async function GET() {
   )
 
   const shows = await res.json()
-  const broken = []
+  const missing = shows.filter((show: any) => !show.video_url || show.video_url.trim() === '')
 
-  for (const show of shows) {
-    if (!show.video_url) {
-      broken.push({ title: show.title, url: 'No video URL set' })
-      continue
-    }
-    try {
-      const check = await fetch(show.video_url, { method: 'HEAD' })
-      if (!check.ok) broken.push({ title: show.title, url: show.video_url })
-    } catch {
-      broken.push({ title: show.title, url: show.video_url })
-    }
-  }
-
-  if (broken.length > 0) {
+  if (missing.length > 0) {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -37,12 +24,12 @@ export async function GET() {
       body: JSON.stringify({
         from: 'Drama Land <onboarding@resend.dev>',
         to: 'support@discoverdramaland.com',
-        subject: `⚠️ ${broken.length} Broken Video Links on Drama Land`,
+        subject: `⚠️ ${missing.length} Shows Missing Video Links on Drama Land`,
         html: `
-          <h2>Broken Video Links</h2>
-          <p>${broken.length} broken links found out of ${shows.length} shows checked.</p>
+          <h2>Shows Missing Video Links</h2>
+          <p>${missing.length} shows have no video URL out of ${shows.length} total shows.</p>
           <ul>
-            ${broken.map((b: any) => `<li><strong>${b.title}</strong><br/>${b.url}</li>`).join('')}
+            ${missing.map((b: any) => `<li><strong>${b.title}</strong></li>`).join('')}
           </ul>
           <p><a href="https://discoverdramaland.com/admin">Fix them in your admin panel</a></p>
         `
@@ -50,5 +37,5 @@ export async function GET() {
     })
   }
 
-  return NextResponse.json({ checked: shows.length, broken: broken.length })
+  return NextResponse.json({ checked: shows.length, missing: missing.length })
 }
