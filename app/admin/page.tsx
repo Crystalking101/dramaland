@@ -311,6 +311,7 @@ export default function AdminPanel() {
 
   const filteredShows = shows.filter(show =>
     show.title?.toLowerCase().includes(showSearch.toLowerCase())
+    show.id?.toLowerCase().includes(showSearch.toLowerCase())
   )
 
   if (loading) return (
