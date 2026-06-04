@@ -13,8 +13,10 @@ export async function GET() {
     )
 
     const shows = await res.json()
+    if (!Array.isArray(shows)) {
+      return NextResponse.json({ error: 'Supabase error', details: shows }, { status: 500 })
+    }
     const missing = shows.filter((show: any) => !show.video_url || show.video_url.trim() === '')
-
     if (missing.length > 0) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
