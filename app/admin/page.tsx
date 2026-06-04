@@ -114,6 +114,7 @@ export default function AdminPanel() {
           backdrop_url: backdropUrl || null,
           is_featured: isFeatured,
           language, cast,
+          video_url: videoUrl || null,
         })
       }
     )
