@@ -3,8 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?select=id,title,video_url`,
-      {
+      {`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Episodes?select=id,show_id,video_url`,
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
@@ -16,7 +15,7 @@ export async function GET() {
     if (!Array.isArray(shows)) {
       return NextResponse.json({ error: 'Supabase error', details: shows }, { status: 500 })
     }
-    const missing = shows.filter((show: any) => !show.video_url || show.video_url.trim() === '')
+    const missing = shows.filter((episode: any) => !episode.video_url || episode.video_url.trim() === '')
     if (missing.length > 0) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
