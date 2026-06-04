@@ -63,7 +63,7 @@ export async function GET() {
         },
         body: JSON.stringify({
           from: 'Drama Land <onboarding@resend.dev>',
-          to: 'support@discoverdramaland.com',
+          to: 'crystalking101@gmail.com',
           subject: '⚠️ ' + broken.length + ' Broken Video Links on Drama Land',
           html: '<h2>Broken Video Links</h2><p>' + broken.length + ' broken or missing videos found out of ' + episodes.length + ' total episodes.</p><ul>' + broken.map((b: any) => '<li>Show ID: ' + b.show_id + '<br/>' + b.url + '</li>').join('') + '</ul><p><a href="https://discoverdramaland.com/admin">Fix them in your admin panel</a></p>'
         })
