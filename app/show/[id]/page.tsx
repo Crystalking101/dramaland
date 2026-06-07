@@ -479,6 +479,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
                       <img
                         src={s.thumbnail_url}
                         alt={s.title}
+                        referrerPolicy="no-referrer"
                         style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
                       />
                     ) : (

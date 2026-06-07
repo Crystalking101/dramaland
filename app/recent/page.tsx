@@ -35,6 +35,7 @@ export default async function Recent() {
                   <img
                     src={show.thumbnail_url}
                     alt={show.title}
+                    referrerPolicy="no-referrer"
                     style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
                   />
                 ) : (

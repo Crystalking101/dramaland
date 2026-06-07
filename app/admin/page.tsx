@@ -373,7 +373,7 @@ export default function AdminPanel() {
               <div key={show.id} style={{borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${show.is_featured ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`, overflow: 'hidden'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', flexWrap: 'wrap', gap: '10px'}}>
                   <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
-                    {show.thumbnail_url && <img src={show.thumbnail_url} alt={show.title} style={{width: '40px', height: '56px', objectFit: 'cover', borderRadius: '6px'}}/>}
+                    {show.thumbnail_url && <img src={show.thumbnail_url} alt={show.title} referrerPolicy="no-referrer" style={{width: '40px', height: '56px', objectFit: 'cover', borderRadius: '6px'}}/>}
                     <div>
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'}}>
                         <div style={{color: '#F0EEE8', fontSize: '14px', fontWeight: '500'}}>{show.title}</div>
