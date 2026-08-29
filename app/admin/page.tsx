@@ -12,8 +12,11 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true)
   const [shows, setShows] = useState<any[]>([])
   const [comments, setComments] = useState<any[]>([])
+  const [actors, setActors] = useState<any[]>([])
+  const [actorShows, setActorShows] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('shows')
   const [showSearch, setShowSearch] = useState('')
+  const [actorSearch, setActorSearch] = useState('')
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -31,6 +34,20 @@ export default function AdminPanel() {
   const [epNumber, setEpNumber] = useState('')
   const [epTitle, setEpTitle] = useState('')
   const [epVideoUrl, setEpVideoUrl] = useState('')
+
+  // Actor form fields
+  const [actorName, setActorName] = useState('')
+  const [actorPhotoUrl, setActorPhotoUrl] = useState('')
+  const [actorBio, setActorBio] = useState('')
+  const [actorFunFacts, setActorFunFacts] = useState('')
+  const [actorUpcomingWork, setActorUpcomingWork] = useState('')
+  const [actorInstagram, setActorInstagram] = useState('')
+  const [actorWeibo, setActorWeibo] = useState('')
+  const [actorYoutube, setActorYoutube] = useState('')
+  const [actorFeaturedVideoUrl, setActorFeaturedVideoUrl] = useState('')
+  const [actorIsTrending, setActorIsTrending] = useState(false)
+  const [actorSelectedShowIds, setActorSelectedShowIds] = useState<string[]>([])
+  const [editingActorId, setEditingActorId] = useState<string | null>(null)
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -61,6 +78,8 @@ export default function AdminPanel() {
     if (userToken) {
       loadShows()
       loadComments()
+      loadActors()
+      loadActorShows()
     }
   }, [userToken])
 
@@ -90,6 +109,34 @@ export default function AdminPanel() {
     )
     const data = await res.json()
     setComments(data)
+  }
+
+  async function loadActors() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors?select=*&order=sort_order.asc,created_at.desc`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        }
+      }
+    )
+    const data = await res.json()
+    setActors(data)
+  }
+
+  async function loadActorShows() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actor_Shows?select=*`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        }
+      }
+    )
+    const data = await res.json()
+    setActorShows(data)
   }
 
   async function addShow() {
@@ -270,6 +317,179 @@ export default function AdminPanel() {
     loadComments()
   }
 
+  function resetActorForm() {
+    setActorName(''); setActorPhotoUrl(''); setActorBio('')
+    setActorFunFacts(''); setActorUpcomingWork('')
+    setActorInstagram(''); setActorWeibo(''); setActorYoutube('')
+    setActorFeaturedVideoUrl(''); setActorIsTrending(false)
+    setActorSelectedShowIds([])
+    setEditingActorId(null)
+  }
+
+  function startEditActor(actor: any) {
+    setEditingActorId(actor.id)
+    setActorName(actor.name || '')
+    setActorPhotoUrl(actor.photo_url || '')
+    setActorBio(actor.bio || '')
+    setActorFunFacts((actor.fun_facts || []).join(', '))
+    setActorUpcomingWork((actor.upcoming_work || []).join(', '))
+    setActorInstagram(actor.social_links?.instagram || '')
+    setActorWeibo(actor.social_links?.weibo || '')
+    setActorYoutube(actor.social_links?.youtube || '')
+    setActorFeaturedVideoUrl(actor.featured_video_url || '')
+    setActorIsTrending(!!actor.is_trending)
+    setActorSelectedShowIds(actorShows.filter(link => link.actor_id === actor.id).map(link => link.show_id))
+    setActiveTab('add actor')
+  }
+
+  async function saveActor() {
+    if (!actorName) return
+    setSaving(true)
+
+    const payload = {
+      name: actorName,
+      photo_url: actorPhotoUrl || null,
+      bio: actorBio || null,
+      fun_facts: actorFunFacts ? actorFunFacts.split(',').map(s => s.trim()).filter(Boolean) : [],
+      upcoming_work: actorUpcomingWork ? actorUpcomingWork.split(',').map(s => s.trim()).filter(Boolean) : [],
+      social_links: {
+        instagram: actorInstagram || undefined,
+        weibo: actorWeibo || undefined,
+        youtube: actorYoutube || undefined,
+      },
+      featured_video_url: actorFeaturedVideoUrl || null,
+      is_trending: actorIsTrending,
+    }
+
+    let actorId = editingActorId
+
+    if (editingActorId) {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors?id=eq.${editingActorId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify(payload)
+        }
+      )
+      if (!res.ok) {
+        const err = await res.text()
+        setMessage(`❌ Error: ${res.status} — ${err}`)
+        setSaving(false)
+        setTimeout(() => setMessage(''), 8000)
+        return
+      }
+    } else {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors`,
+        {
+          method: 'POST',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: JSON.stringify(payload)
+        }
+      )
+      if (!res.ok) {
+        const err = await res.json()
+        setMessage(`❌ Error: ${JSON.stringify(err)}`)
+        setSaving(false)
+        setTimeout(() => setMessage(''), 8000)
+        return
+      }
+      const data = await res.json()
+      actorId = data[0]?.id
+    }
+
+    // Sync Actor_Shows: delete existing links for this actor, then re-insert selected ones
+    if (actorId) {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actor_Shows?actor_id=eq.${actorId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${userToken}`,
+          }
+        }
+      )
+      if (actorSelectedShowIds.length > 0) {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actor_Shows`,
+          {
+            method: 'POST',
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              Authorization: `Bearer ${userToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(actorSelectedShowIds.map(show_id => ({ actor_id: actorId, show_id })))
+          }
+        )
+      }
+    }
+
+    setMessage(editingActorId ? '✅ Actor updated successfully!' : '✅ Actor added successfully!')
+    resetActorForm()
+    loadActors()
+    loadActorShows()
+    setSaving(false)
+    setTimeout(() => setMessage(''), 3000)
+  }
+
+  async function deleteActor(actorId: string) {
+    if (!confirm('Are you sure you want to delete this actor?')) return
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors?id=eq.${actorId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+        }
+      }
+    )
+    loadActors()
+    loadActorShows()
+  }
+
+  async function toggleActorTrending(actor: any) {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors?id=eq.${actor.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ is_trending: !actor.is_trending })
+      }
+    )
+    if (!res.ok) {
+      const err = await res.text()
+      setMessage(`❌ Error: ${res.status} — ${err}`)
+      setTimeout(() => setMessage(''), 6000)
+      return
+    }
+    loadActors()
+  }
+
+  function toggleActorShowSelection(showId: string) {
+    setActorSelectedShowIds(prev =>
+      prev.includes(showId) ? prev.filter(id => id !== showId) : [...prev, showId]
+    )
+  }
+
   const inputStyle = {
     width: '100%',
     padding: '10px 14px',
@@ -313,6 +533,14 @@ export default function AdminPanel() {
     show.title?.toLowerCase().includes(showSearch.toLowerCase()) || show.id?.toLowerCase().includes(showSearch.toLowerCase())
   )
 
+  const filteredActors = actors.filter(actor =>
+    actor.name?.toLowerCase().includes(actorSearch.toLowerCase())
+  )
+
+  function actorShowCount(actorId: string) {
+    return actorShows.filter(link => link.actor_id === actorId).length
+  }
+
   if (loading) return (
     <>
       <Nav/>
@@ -347,9 +575,9 @@ export default function AdminPanel() {
           </div>
         )}
 
-        <div className="tabs" style={{marginBottom: '32px'}}>
-          {['shows', 'add show', 'add episode', 'comments'].map(tab => (
-            <div key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)} style={{textTransform: 'capitalize'}}>{tab}</div>
+        <div className="tabs" style={{marginBottom: '32px', flexWrap: 'wrap' as const}}>
+          {['shows', 'add show', 'add episode', 'actors', 'add actor', 'comments'].map(tab => (
+            <div key={tab} className={`tab ${activeTab === tab ? 'active' : ''}`} onClick={() => { if (tab !== 'add actor') resetActorForm(); setActiveTab(tab) }} style={{textTransform: 'capitalize'}}>{tab}</div>
           ))}
         </div>
 
@@ -464,6 +692,113 @@ export default function AdminPanel() {
             <button onClick={addEpisode} disabled={saving || !selectedShowId || !epVideoUrl} style={{padding: '12px 28px', borderRadius: '8px', background: '#FB7185', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600', opacity: (!selectedShowId || !epVideoUrl) ? 0.5 : 1}}>
               {saving ? 'Adding...' : 'Add Episode'}
             </button>
+          </div>
+        )}
+
+        {activeTab === 'actors' && (
+          <div>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px'}}>
+              <div style={{fontSize: '16px', color: '#fff', fontWeight: '600'}}>All Actors ({filteredActors.length}{actorSearch ? ` of ${actors.length}` : ''})</div>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', padding: '8px 14px', flex: 1, maxWidth: '280px'}}>
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
+                  <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <input type="text" placeholder="Search actors..." value={actorSearch} onChange={e => setActorSearch(e.target.value)} style={{background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '13px', width: '100%', fontFamily: 'inherit'}}/>
+                {actorSearch && <button onClick={() => setActorSearch('')} style={{background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1}}>×</button>}
+              </div>
+            </div>
+
+            {filteredActors.length === 0 && <div style={{textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '40px 0'}}>No actors found{actorSearch ? ` for "${actorSearch}"` : ''}</div>}
+
+            {filteredActors.map((actor: any) => (
+              <div key={actor.id} style={{borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${actor.is_trending ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`, overflow: 'hidden'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', flexWrap: 'wrap', gap: '10px'}}>
+                  <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
+                    {actor.photo_url && <img src={actor.photo_url} alt={actor.name} referrerPolicy="no-referrer" style={{width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px'}}/>}
+                    <div>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'}}>
+                        <div style={{color: '#F0EEE8', fontSize: '14px', fontWeight: '500'}}>{actor.name}</div>
+                        {actor.is_trending && <span style={{fontSize: '10px', background: '#FB7185', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontWeight: '600'}}>TRENDING</span>}
+                      </div>
+                      <div style={{color: 'rgba(255,255,255,0.4)', fontSize: '12px'}}>{actorShowCount(actor.id)} show{actorShowCount(actor.id) === 1 ? '' : 's'} linked</div>
+                    </div>
+                  </div>
+                  <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap', flexShrink: 0}}>
+                    {toggleBtn(actor.is_trending, actor.is_trending ? '★ Trending' : '☆ Trending', () => toggleActorTrending(actor))}
+                    <button onClick={() => startEditActor(actor)} style={{background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>Edit</button>
+                    <button onClick={() => deleteActor(actor.id)} style={{background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'add actor' && (
+          <div>
+            <div style={{fontSize: '16px', color: '#fff', marginBottom: '20px', fontWeight: '600'}}>{editingActorId ? 'Edit Actor' : 'Add New Actor'}</div>
+            <label style={labelStyle}>Name *</label>
+            <input style={inputStyle} value={actorName} onChange={e => setActorName(e.target.value)} placeholder="Actor name"/>
+            <label style={labelStyle}>Photo URL</label>
+            <input style={inputStyle} value={actorPhotoUrl} onChange={e => setActorPhotoUrl(e.target.value)} placeholder="https://... (portrait, uploaded via imgbb)"/>
+            <label style={labelStyle}>Bio</label>
+            <textarea style={{...inputStyle, height: '90px', resize: 'vertical'}} value={actorBio} onChange={e => setActorBio(e.target.value)} placeholder="Short bio"/>
+            <label style={labelStyle}>Fun Facts <span style={{color: 'rgba(255,255,255,0.35)'}}>(comma-separated)</span></label>
+            <input style={inputStyle} value={actorFunFacts} onChange={e => setActorFunFacts(e.target.value)} placeholder="Trained in classical dance, Speaks 3 languages..."/>
+            <label style={labelStyle}>Upcoming Work <span style={{color: 'rgba(255,255,255,0.35)'}}>(comma-separated)</span></label>
+            <input style={inputStyle} value={actorUpcomingWork} onChange={e => setActorUpcomingWork(e.target.value)} placeholder="New drama title (2027), Film premiere (2027)..."/>
+            <label style={labelStyle}>Instagram URL</label>
+            <input style={inputStyle} value={actorInstagram} onChange={e => setActorInstagram(e.target.value)} placeholder="https://instagram.com/..."/>
+            <label style={labelStyle}>Weibo URL</label>
+            <input style={inputStyle} value={actorWeibo} onChange={e => setActorWeibo(e.target.value)} placeholder="https://weibo.com/..."/>
+            <label style={labelStyle}>YouTube URL</label>
+            <input style={inputStyle} value={actorYoutube} onChange={e => setActorYoutube(e.target.value)} placeholder="https://youtube.com/..."/>
+            <label style={labelStyle}>Featured Video URL <span style={{color: 'rgba(255,255,255,0.35)'}}>(trailer or interview embed)</span></label>
+            <input style={inputStyle} value={actorFeaturedVideoUrl} onChange={e => setActorFeaturedVideoUrl(e.target.value)} placeholder="https://youtu.be/... or https://dai.ly/..."/>
+
+            <label style={labelStyle}>Link to Shows on Drama Land</label>
+            <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
+              {shows.map((show: any) => (
+                <button
+                  key={show.id}
+                  onClick={() => toggleActorShowSelection(show.id)}
+                  style={{
+                    background: actorSelectedShowIds.includes(show.id) ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)',
+                    border: `1px solid ${actorSelectedShowIds.includes(show.id) ? '#FB7185' : 'rgba(255,255,255,0.2)'}`,
+                    color: actorSelectedShowIds.includes(show.id) ? '#FB7185' : 'rgba(255,255,255,0.5)',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  {show.title}
+                </button>
+              ))}
+              {shows.length === 0 && <div style={{color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No shows yet — add a show first.</div>}
+            </div>
+
+            <div onClick={() => setActorIsTrending(!actorIsTrending)} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '8px', border: `1px solid ${actorIsTrending ? '#FB7185' : 'rgba(255,255,255,0.15)'}`, background: actorIsTrending ? 'rgba(251,113,133,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', marginBottom: '20px'}}>
+              <div style={{width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${actorIsTrending ? '#FB7185' : 'rgba(255,255,255,0.3)'}`, background: actorIsTrending ? '#FB7185' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                {actorIsTrending && <span style={{color: '#fff', fontSize: '13px', lineHeight: 1}}>✓</span>}
+              </div>
+              <div>
+                <div style={{color: '#F0EEE8', fontSize: '14px', fontWeight: '500'}}>Show in Fan Favorites row on homepage</div>
+                <div style={{color: 'rgba(255,255,255,0.4)', fontSize: '12px'}}>Appears in the trending actors row (max 4 shown)</div>
+              </div>
+            </div>
+
+            <div style={{display: 'flex', gap: '10px'}}>
+              <button onClick={saveActor} disabled={saving || !actorName} style={{padding: '12px 28px', borderRadius: '8px', background: '#FB7185', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600', opacity: !actorName ? 0.5 : 1}}>
+                {saving ? 'Saving...' : editingActorId ? 'Save Changes' : 'Add Actor'}
+              </button>
+              {editingActorId && (
+                <button onClick={() => { resetActorForm(); setActiveTab('actors') }} style={{padding: '12px 28px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '14px', fontWeight: '600'}}>
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         )}
 
