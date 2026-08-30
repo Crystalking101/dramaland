@@ -620,6 +620,7 @@ export default function AdminPanel() {
                     {toggleBtn(show.is_hot_pick, show.is_hot_pick ? '🔥 Hot' : '🔥 Hot Pick', () => toggleField(show, 'is_hot_pick', show.is_hot_pick))}
                     {toggleBtn(show.is_fan_favorite, show.is_fan_favorite ? '⭐ Fav' : '⭐ Fan Fav', () => toggleField(show, 'is_fan_favorite', show.is_fan_favorite))}
                     {toggleBtn(show.is_spicy, show.is_spicy ? '🌶️ Spicy' : '🌶️ Spicy', () => toggleField(show, 'is_spicy', show.is_spicy))}
+                    {toggleBtn(show.is_published, show.is_published ? '👁 Published' : '🙈 Hidden', () => toggleField(show, 'is_published', show.is_published))}
                     <button onClick={() => deleteShow(show.id)} style={{background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>Delete</button>
                   </div>
                 </div>
