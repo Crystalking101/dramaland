@@ -8,7 +8,7 @@ const ADMIN_EMAIL = 'crystalking101@gmail.com'
 
 async function getShow(id: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${id}&select=*`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=eq.${id}&is_published=eq.true&select=*`,
     {
       headers: {
         apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -40,7 +40,7 @@ async function getEpisodes(showId: string) {
 async function getSimilarShows(currentId: string, genre: string) {
   if (!genre) {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&is_published=eq.true&select=*&limit=6`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -56,7 +56,7 @@ async function getSimilarShows(currentId: string, genre: string) {
   const firstGenre = genre.split(',')[0].trim()
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&genre=ilike.*${encodeURIComponent(firstGenre)}*&select=*&limit=6`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&genre=ilike.*${encodeURIComponent(firstGenre)}*&is_published=eq.true&select=*&limit=6`,
     {
       headers: {
         apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -70,7 +70,7 @@ async function getSimilarShows(currentId: string, genre: string) {
 
   if (data.length < 3) {
     const fallback = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&select=*&limit=6`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&is_published=eq.true&select=*&limit=6`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

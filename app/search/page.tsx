@@ -14,7 +14,7 @@ function SearchContent() {
   useEffect(() => {
     async function loadShows() {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?select=*&order=created_at.desc`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?is_published=eq.true&select=*&order=created_at.desc`,
         {
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

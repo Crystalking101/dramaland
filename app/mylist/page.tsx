@@ -40,7 +40,8 @@ export default function MyList() {
       // Get show details for each saved show
       const showIds = watchData.map((w: any) => w.show_id).join(',')
       const showRes = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=in.(${showIds})&select=*`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=in.(${showIds})&is_published=eq.true&select=*`,
+      
         {
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
