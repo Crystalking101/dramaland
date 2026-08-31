@@ -17,6 +17,21 @@ async function getShows() {
   return res.json()
 }
 
+async function getTrendingActors() {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Actors?is_trending=eq.true&select=*&order=sort_order.asc&limit=4`,
+    {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+      cache: 'no-store'
+    }
+  )
+  if (!res.ok) return []
+  return res.json()
+}
+
 function ShowRow({ title, shows, seeAllHref }: { title: string, shows: any[], seeAllHref?: string }) {
   if (shows.length === 0) return null
   return (
@@ -125,8 +140,56 @@ function Top10Row({ shows }: { shows: any[] }) {
   )
 }
 
+function FanFavoriteActorsRow({ actors }: { actors: any[] }) {
+  if (actors.length === 0) return null
+  return (
+    <div className="section">
+      <div className="section-header">
+        <div className="section-title">Fan Favorites ⭐</div>
+      </div>
+      <div style={{display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px'}}>
+        {actors.map((actor: any) => (
+          <a
+            href={`/actors/${actor.id}`}
+            key={actor.id}
+            style={{
+              textDecoration: 'none',
+              flex: '0 0 140px',
+              height: '280px',
+              borderRadius: '18px',
+              position: 'relative',
+              overflow: 'hidden',
+              flexShrink: 0,
+            }}
+          >
+            {actor.photo_url ? (
+              <img
+                src={actor.photo_url}
+                alt={actor.name}
+                referrerPolicy="no-referrer"
+                style={{width: '100%', height: '100%', objectFit: 'cover'}}
+              />
+            ) : (
+              <div style={{width: '100%', height: '100%', background: 'rgba(255,255,255,0.08)'}}/>
+            )}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              padding: '14px 12px 30px',
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%)',
+              color: '#fff', fontSize: '13px', fontWeight: 500,
+            }}>
+              {actor.name}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function Home() {
   const shows = await getShows()
+  const trendingActors = await getTrendingActors()
 
   const featured = shows.filter((s: any) => s.is_featured && s.backdrop_url)
   const hotPicks = shows.filter((s: any) => s.is_hot_pick)
@@ -148,6 +211,7 @@ export default async function Home() {
       <Top10Row shows={hotPicks} />
       <ShowRow title="Trending" shows={trending} seeAllHref="/trending" />
       <ShowRow title="Fan Favorites ⭐" shows={fanFavorites} />
+      <FanFavoriteActorsRow actors={trendingActors} />
       <ShowRow title="Recently Added" shows={recentlyAdded} seeAllHref="/recent" />
       <ShowRow title="Spicy & Steamy Dramas 🌶️" shows={spicy} />
       <Footer/>
