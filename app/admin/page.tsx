@@ -48,6 +48,7 @@ export default function AdminPanel() {
   const [actorFeaturedVideoUrl, setActorFeaturedVideoUrl] = useState('')
   const [actorIsTrending, setActorIsTrending] = useState(false)
   const [actorSelectedShowIds, setActorSelectedShowIds] = useState<string[]>([])
+  const [showLinkSearch, setShowLinkSearch] = useState('')
   const [editingActorId, setEditingActorId] = useState<string | null>(null)
 
   const [saving, setSaving] = useState(false)
@@ -324,6 +325,7 @@ export default function AdminPanel() {
     setActorInstagram(''); setActorWeibo(''); setActorYoutube('')
     setActorFeaturedVideoUrl(''); setActorIsTrending(false)
     setActorSelectedShowIds([])
+    setShowLinkSearch('')
     setEditingActorId(null)
   }
 
@@ -774,7 +776,7 @@ export default function AdminPanel() {
           <div>
             <div style={{fontSize: '16px', color: '#fff', marginBottom: '20px', fontWeight: '600'}}>{editingActorId ? 'Edit Actor' : 'Add New Actor'}</div>
             <label style={labelStyle}>Name *</label>
-            <input style={inputStyle} value={actorName} onChange={e => setActorName(e.target.value)} placeholder="Actor name"/>
+            <input style={inputStyle} value={actorName} onChange={e => setActorName(e.target.value)} onBlur={findShowsByCast} placeholder="Actor name"/>
             <label style={labelStyle}>Photo URL</label>
             <input style={inputStyle} value={actorPhotoUrl} onChange={e => setActorPhotoUrl(e.target.value)} placeholder="https://... (portrait, uploaded via imgbb)"/>
             <label style={labelStyle}>Bio</label>
@@ -808,28 +810,54 @@ export default function AdminPanel() {
                   opacity: !actorName.trim() ? 0.5 : 1,
                 }}
               >
-                🔎 Find from Cast
+                🔎 Re-check Cast
               </button>
             </div>
-            <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
-              {shows.map((show: any) => (
-                <button
-                  key={show.id}
-                  onClick={() => toggleActorShowSelection(show.id)}
-                  style={{
-                    background: actorSelectedShowIds.includes(show.id) ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)',
-                    border: `1px solid ${actorSelectedShowIds.includes(show.id) ? '#FB7185' : 'rgba(255,255,255,0.2)'}`,
-                    color: actorSelectedShowIds.includes(show.id) ? '#FB7185' : 'rgba(255,255,255,0.5)',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  {show.title}
-                </button>
-              ))}
-              {shows.length === 0 && <div style={{color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No shows yet — add a show first.</div>}
+
+            {actorSelectedShowIds.length > 0 && (
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px'}}>
+                {actorSelectedShowIds.map(showId => {
+                  const linkedShow = shows.find((s: any) => s.id === showId)
+                  if (!linkedShow) return null
+                  return (
+                    <div key={showId} style={{display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(251,113,133,0.15)', border: '1px solid #FB7185', color: '#FB7185', padding: '6px 10px', borderRadius: '6px', fontSize: '12px'}}>
+                      {linkedShow.title}
+                      <button onClick={() => toggleActorShowSelection(showId)} style={{background: 'none', border: 'none', color: '#FB7185', cursor: 'pointer', fontSize: '14px', padding: 0, lineHeight: 1}}>×</button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {actorSelectedShowIds.length === 0 && (
+              <div style={{color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '10px'}}>No shows linked yet — type the actor's name above, or search below.</div>
+            )}
+
+            <div style={{position: 'relative', marginBottom: '20px'}}>
+              <input
+                style={{...inputStyle, marginBottom: 0}}
+                value={showLinkSearch}
+                onChange={e => setShowLinkSearch(e.target.value)}
+                placeholder="Search to manually add a show..."
+              />
+              {showLinkSearch.trim() && (
+                <div style={{position: 'absolute', top: '46px', left: 0, right: 0, zIndex: 10, background: '#1a1620', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', maxHeight: '220px', overflowY: 'auto'}}>
+                  {shows
+                    .filter((s: any) => s.title?.toLowerCase().includes(showLinkSearch.toLowerCase()) && !actorSelectedShowIds.includes(s.id))
+                    .slice(0, 8)
+                    .map((s: any) => (
+                      <div
+                        key={s.id}
+                        onClick={() => { toggleActorShowSelection(s.id); setShowLinkSearch('') }}
+                        style={{padding: '10px 14px', color: '#F0EEE8', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.06)'}}
+                      >
+                        {s.title}
+                      </div>
+                    ))}
+                  {shows.filter((s: any) => s.title?.toLowerCase().includes(showLinkSearch.toLowerCase()) && !actorSelectedShowIds.includes(s.id)).length === 0 && (
+                    <div style={{padding: '10px 14px', color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No matching shows.</div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div onClick={() => setActorIsTrending(!actorIsTrending)} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '8px', border: `1px solid ${actorIsTrending ? '#FB7185' : 'rgba(255,255,255,0.15)'}`, background: actorIsTrending ? 'rgba(251,113,133,0.1)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', marginBottom: '20px'}}>
