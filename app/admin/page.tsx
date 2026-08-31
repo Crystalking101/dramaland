@@ -16,6 +16,7 @@ export default function AdminPanel() {
   const [actorShows, setActorShows] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('shows')
   const [showSearch, setShowSearch] = useState('')
+  const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   const [actorSearch, setActorSearch] = useState('')
 
   const [title, setTitle] = useState('')
@@ -529,9 +530,11 @@ export default function AdminPanel() {
     )
   }
 
-  const filteredShows = shows.filter(show =>
-    show.title?.toLowerCase().includes(showSearch.toLowerCase()) || show.id?.toLowerCase().includes(showSearch.toLowerCase())
-  )
+  const filteredShows = shows
+    .filter(show =>
+      show.title?.toLowerCase().includes(showSearch.toLowerCase()) || show.id?.toLowerCase().includes(showSearch.toLowerCase())
+    )
+    .filter(show => showHiddenOnly ? show.is_published === false : true)
 
   const filteredActors = actors.filter(actor =>
     actor.name?.toLowerCase().includes(actorSearch.toLowerCase())
@@ -583,19 +586,36 @@ export default function AdminPanel() {
 
         {activeTab === 'shows' && (
           <div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px'}}>
-              <div style={{fontSize: '16px', color: '#fff', fontWeight: '600'}}>All Shows ({filteredShows.length}{showSearch ? ` of ${shows.length}` : ''})</div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', padding: '8px 14px', flex: 1, maxWidth: '280px'}}>
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                  <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-                  <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <input type="text" placeholder="Search shows..." value={showSearch} onChange={e => setShowSearch(e.target.value)} style={{background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '13px', width: '100%', fontFamily: 'inherit'}}/>
-                {showSearch && <button onClick={() => setShowSearch('')} style={{background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1}}>×</button>}
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' as const}}>
+              <div style={{fontSize: '16px', color: '#fff', fontWeight: '600'}}>All Shows ({filteredShows.length}{showSearch || showHiddenOnly ? ` of ${shows.length}` : ''})</div>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' as const}}>
+                <button
+                  onClick={() => setShowHiddenOnly(!showHiddenOnly)}
+                  style={{
+                    background: showHiddenOnly ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)',
+                    border: `1px solid ${showHiddenOnly ? '#FB7185' : 'rgba(255,255,255,0.2)'}`,
+                    color: showHiddenOnly ? '#FB7185' : 'rgba(255,255,255,0.5)',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    whiteSpace: 'nowrap' as const,
+                  }}
+                >
+                  🙈 Hidden Only
+                </button>
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', padding: '8px 14px', flex: 1, maxWidth: '280px'}}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                    <circle cx="6.5" cy="6.5" r="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
+                    <path d="M10.5 10.5L14 14" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <input type="text" placeholder="Search shows..." value={showSearch} onChange={e => setShowSearch(e.target.value)} style={{background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '13px', width: '100%', fontFamily: 'inherit'}}/>
+                  {showSearch && <button onClick={() => setShowSearch('')} style={{background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1}}>×</button>}
+                </div>
               </div>
             </div>
 
-            {filteredShows.length === 0 && <div style={{textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '40px 0'}}>No shows found for "{showSearch}"</div>}
+            {filteredShows.length === 0 && <div style={{textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '40px 0'}}>{showHiddenOnly ? 'No hidden shows.' : `No shows found for "${showSearch}"`}</div>}
 
             {filteredShows.map((show: any) => (
               <div key={show.id} style={{borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '10px', border: `1px solid ${show.is_featured ? 'rgba(251,113,133,0.4)' : 'rgba(255,255,255,0.08)'}`, overflow: 'hidden'}}>
@@ -620,7 +640,6 @@ export default function AdminPanel() {
                     {toggleBtn(show.is_hot_pick, show.is_hot_pick ? '🔥 Hot' : '🔥 Hot Pick', () => toggleField(show, 'is_hot_pick', show.is_hot_pick))}
                     {toggleBtn(show.is_fan_favorite, show.is_fan_favorite ? '⭐ Fav' : '⭐ Fan Fav', () => toggleField(show, 'is_fan_favorite', show.is_fan_favorite))}
                     {toggleBtn(show.is_spicy, show.is_spicy ? '🌶️ Spicy' : '🌶️ Spicy', () => toggleField(show, 'is_spicy', show.is_spicy))}
-                    {toggleBtn(show.is_published, show.is_published ? '👁 Published' : '🙈 Hidden', () => toggleField(show, 'is_published', show.is_published))}
                     <button onClick={() => deleteShow(show.id)} style={{background: 'rgba(255,50,50,0.15)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>Delete</button>
                   </div>
                 </div>
