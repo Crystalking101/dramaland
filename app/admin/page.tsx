@@ -491,6 +491,21 @@ export default function AdminPanel() {
     )
   }
 
+  function normalizeName(name: string) {
+    return name.toLowerCase().replace(/[\s\-_.]/g, '')
+  }
+
+  function findShowsByCast() {
+    if (!actorName.trim()) return
+    const nameNormalized = normalizeName(actorName)
+    const matches = shows
+      .filter((show: any) => show.cast && normalizeName(show.cast).includes(nameNormalized))
+      .map((show: any) => show.id)
+    setActorSelectedShowIds(prev => Array.from(new Set([...prev, ...matches])))
+    setMessage(matches.length > 0 ? `✅ Found ${matches.length} matching show${matches.length === 1 ? '' : 's'} from cast` : '❌ No shows found with that name in cast')
+    setTimeout(() => setMessage(''), 4000)
+  }
+
   const inputStyle = {
     width: '100%',
     padding: '10px 14px',
@@ -777,7 +792,25 @@ export default function AdminPanel() {
             <label style={labelStyle}>Featured Video URL <span style={{color: 'rgba(255,255,255,0.35)'}}>(trailer or interview embed)</span></label>
             <input style={inputStyle} value={actorFeaturedVideoUrl} onChange={e => setActorFeaturedVideoUrl(e.target.value)} placeholder="https://youtu.be/... or https://dai.ly/..."/>
 
-            <label style={labelStyle}>Link to Shows on Drama Land</label>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
+              <label style={{...labelStyle, marginBottom: 0}}>Link to Shows on Drama Land</label>
+              <button
+                onClick={findShowsByCast}
+                disabled={!actorName.trim()}
+                style={{
+                  background: 'rgba(251,113,133,0.15)',
+                  border: '1px solid #FB7185',
+                  color: '#FB7185',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  opacity: !actorName.trim() ? 0.5 : 1,
+                }}
+              >
+                🔎 Find from Cast
+              </button>
+            </div>
             <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
               {shows.map((show: any) => (
                 <button
