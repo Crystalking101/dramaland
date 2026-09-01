@@ -81,22 +81,26 @@ export default function MyList() {
               No saved shows yet! Hit the My List button on any show to save it here 🩷
             </div>
           ) : (
-            <div className="cards-grid">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: '16px',
+            }}>
               {savedShows.map((show: any) => (
-                <a href={`/show/${show.id}`} key={show.id} className="card">
-                  <div className="card-poster">
+                <a href={`/show/${show.id}`} key={show.id} style={{textDecoration: 'none'}}>
+                  <div style={{aspectRatio: '2/3', borderRadius: '10px', overflow: 'hidden'}}>
                     {show.thumbnail_url ? (
                       <img
                         src={show.thumbnail_url}
                         alt={show.title}
                         referrerPolicy="no-referrer"
-                        style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'10px'}}
+                        style={{width:'100%', height:'100%', objectFit:'cover'}}
                       />
                     ) : (
-                      <div className="card-poster-bg p1"><div className="card-overlay"></div></div>
+                      <div className="card-poster-bg p1" style={{width:'100%', height:'100%'}}><div className="card-overlay"></div></div>
                     )}
                   </div>
-                  <div className="card-title">{show.title}</div>
+                  <div className="card-title" style={{marginTop: '8px'}}>{show.title}</div>
                 </a>
               ))}
             </div>
