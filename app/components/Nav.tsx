@@ -10,6 +10,7 @@ export default function Nav() {
   const [user, setUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -42,13 +43,16 @@ export default function Nav() {
 
   function handleSearchChange(value: string) {
     setSearchQuery(value)
-    if (value.trim()) {
-      if (pathname === '/search') {
-        router.replace(`/search?q=${encodeURIComponent(value.trim())}`)
-      } else {
-        router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      if (value.trim()) {
+        if (pathname === '/search') {
+          router.replace(`/search?q=${encodeURIComponent(value.trim())}`)
+        } else {
+          router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+        }
       }
-    }
+    }, 400)
   }
 
   function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
