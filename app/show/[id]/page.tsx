@@ -37,10 +37,20 @@ async function getEpisodes(showId: string) {
   return res.json()
 }
 
-async function getSimilarShows(currentId: string, genre: string) {
-  if (!genre) {
+function getBaseTitle(title: string): string {
+  return title
+    .replace(/[:\-]?\s*(part\s*\d+|season\s*\d+|\d+)\s*$/i, '')
+    .trim()
+}
+
+async function getSimilarShows(currentId: string, currentTitle: string, genre: string) {
+  const baseTitle = getBaseTitle(currentTitle)
+
+  // 1. Find sequels/prequels — other shows sharing the same base title
+  let sequelMatches: any[] = []
+  if (baseTitle) {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&is_published=eq.true&select=*&limit=6`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&is_published=eq.true&title=ilike.*${encodeURIComponent(baseTitle)}*&select=*&limit=4`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -49,14 +59,35 @@ async function getSimilarShows(currentId: string, genre: string) {
         cache: 'no-store'
       }
     )
-    if (!res.ok) return []
-    return res.json()
+    if (res.ok) sequelMatches = await res.json()
+  }
+
+  const remainingSlots = 6 - sequelMatches.length
+  if (remainingSlots <= 0) return sequelMatches
+
+  // 2. Fill the rest with genre matches
+  const excludeIds = [currentId, ...sequelMatches.map((s: any) => s.id)]
+  const excludeClause = excludeIds.map(id => `id.neq.${id}`).join(',')
+
+  if (!genre) {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?and=(${excludeClause})&is_published=eq.true&select=*&limit=${remainingSlots}`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+        cache: 'no-store'
+      }
+    )
+    const genreMatches = res.ok ? await res.json() : []
+    return [...sequelMatches, ...genreMatches]
   }
 
   const firstGenre = genre.split(',')[0].trim()
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&genre=ilike.*${encodeURIComponent(firstGenre)}*&is_published=eq.true&select=*&limit=6`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?and=(${excludeClause})&genre=ilike.*${encodeURIComponent(firstGenre)}*&is_published=eq.true&select=*&limit=${remainingSlots}`,
     {
       headers: {
         apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -65,12 +96,11 @@ async function getSimilarShows(currentId: string, genre: string) {
       cache: 'no-store'
     }
   )
-  if (!res.ok) return []
-  const data = await res.json()
+  let genreMatches = res.ok ? await res.json() : []
 
-  if (data.length < 3) {
+  if (genreMatches.length < 3) {
     const fallback = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?id=neq.${currentId}&is_published=eq.true&select=*&limit=6`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?and=(${excludeClause})&is_published=eq.true&select=*&limit=${remainingSlots}`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -79,11 +109,10 @@ async function getSimilarShows(currentId: string, genre: string) {
         cache: 'no-store'
       }
     )
-    if (!fallback.ok) return data
-    return fallback.json()
+    if (fallback.ok) genreMatches = await fallback.json()
   }
 
-  return data
+  return [...sequelMatches, ...genreMatches]
 }
 
 export default function ShowDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -109,7 +138,7 @@ export default function ShowDetail({ params }: { params: Promise<{ id: string }>
     async function load() {
       const s = await getShow(id)
       const e = await getEpisodes(id)
-      const similar = await getSimilarShows(id, s?.genre || '')
+      const similar = await getSimilarShows(id, s?.title || '', s?.genre || '')
       setShow(s)
       setEpisodes(e)
       setSimilarShows(similar)
