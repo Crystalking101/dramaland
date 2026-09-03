@@ -14,6 +14,7 @@ export default function AdminPanel() {
   const [comments, setComments] = useState<any[]>([])
   const [actors, setActors] = useState<any[]>([])
   const [actorShows, setActorShows] = useState<any[]>([])
+  const [relatedShows, setRelatedShows] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('shows')
   const [showSearch, setShowSearch] = useState('')
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
@@ -56,6 +57,8 @@ export default function AdminPanel() {
 
   const [expandedShowId, setExpandedShowId] = useState<string | null>(null)
   const [editBackdropUrl, setEditBackdropUrl] = useState('')
+  const [expandedRelatedId, setExpandedRelatedId] = useState<string | null>(null)
+  const [relatedSearch, setRelatedSearch] = useState('')
 
   useEffect(() => {
     async function getSession() {
@@ -82,6 +85,7 @@ export default function AdminPanel() {
       loadComments()
       loadActors()
       loadActorShows()
+      loadRelatedShows()
     }
   }, [userToken])
 
@@ -139,6 +143,62 @@ export default function AdminPanel() {
     )
     const data = await res.json()
     setActorShows(data)
+  }
+
+  async function loadRelatedShows() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Show_Related?select=*`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        }
+      }
+    )
+    const data = await res.json()
+    setRelatedShows(data)
+  }
+
+  function getRelatedShowIds(showId: string) {
+    return relatedShows
+      .filter((link: any) => link.show_id === showId || link.related_show_id === showId)
+      .map((link: any) => link.show_id === showId ? link.related_show_id : link.show_id)
+  }
+
+  async function addRelatedShow(showId: string, relatedShowId: string) {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Show_Related`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ show_id: showId, related_show_id: relatedShowId })
+      }
+    )
+    if (!res.ok) {
+      const err = await res.text()
+      setMessage(`❌ Error linking show: ${res.status} — ${err}`)
+      setTimeout(() => setMessage(''), 6000)
+      return
+    }
+    loadRelatedShows()
+  }
+
+  async function removeRelatedShow(showId: string, relatedShowId: string) {
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Show_Related?or=(and(show_id.eq.${showId},related_show_id.eq.${relatedShowId}),and(show_id.eq.${relatedShowId},related_show_id.eq.${showId}))`,
+      {
+        method: 'DELETE',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${userToken}`,
+        }
+      }
+    )
+    loadRelatedShows()
   }
 
   async function addShow() {
@@ -653,6 +713,7 @@ export default function AdminPanel() {
                   </div>
                   <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap', flexShrink: 0}}>
                     <button onClick={() => { setExpandedShowId(expandedShowId === show.id ? null : show.id); setEditBackdropUrl(show.backdrop_url || '') }} style={{background: show.backdrop_url ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${show.backdrop_url ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: show.backdrop_url ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>🖼 Backdrop</button>
+                    <button onClick={() => { setExpandedRelatedId(expandedRelatedId === show.id ? null : show.id); setRelatedSearch('') }} style={{background: getRelatedShowIds(show.id).length > 0 ? 'rgba(251,113,133,0.2)' : 'rgba(255,255,255,0.08)', border: `1px solid ${getRelatedShowIds(show.id).length > 0 ? '#FB7185' : 'rgba(255,255,255,0.2)'}`, color: getRelatedShowIds(show.id).length > 0 ? '#FB7185' : 'rgba(255,255,255,0.5)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'}}>🔗 Related{getRelatedShowIds(show.id).length > 0 ? ` (${getRelatedShowIds(show.id).length})` : ''}</button>
                     {toggleBtn(show.is_featured, show.is_featured ? '★ Featured' : '☆ Feature', () => toggleField(show, 'is_featured', show.is_featured))}
                     {toggleBtn(show.is_hot_pick, show.is_hot_pick ? '🔥 Hot' : '🔥 Hot Pick', () => toggleField(show, 'is_hot_pick', show.is_hot_pick))}
                     {toggleBtn(show.is_fan_favorite, show.is_fan_favorite ? '⭐ Fav' : '⭐ Fan Fav', () => toggleField(show, 'is_fan_favorite', show.is_fan_favorite))}
@@ -666,6 +727,57 @@ export default function AdminPanel() {
                     <div style={{display: 'flex', gap: '8px'}}>
                       <input style={{...inputStyle, marginBottom: 0, flex: 1}} value={editBackdropUrl} onChange={e => setEditBackdropUrl(e.target.value)} placeholder="https://... (wide/landscape image, 1280×720 recommended)"/>
                       <button onClick={() => saveBackdrop(show.id)} style={{padding: '10px 18px', borderRadius: '8px', background: '#FB7185', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600', flexShrink: 0}}>Save</button>
+                    </div>
+                  </div>
+                )}
+                {expandedRelatedId === show.id && (
+                  <div style={{padding: '12px 16px', borderTop: '1px solid rgba(251,113,133,0.2)', background: 'rgba(251,113,133,0.05)'}}>
+                    <div style={{fontSize: '12px', color: '#FB7185', marginBottom: '8px', fontWeight: '600'}}>🔗 Link related shows (sequels, prequels, alternate translations) — these get priority in "You May Also Like":</div>
+
+                    {getRelatedShowIds(show.id).length > 0 && (
+                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px'}}>
+                        {getRelatedShowIds(show.id).map(relatedId => {
+                          const relatedShow = shows.find((s: any) => s.id === relatedId)
+                          if (!relatedShow) return null
+                          return (
+                            <div key={relatedId} style={{display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(251,113,133,0.15)', border: '1px solid #FB7185', color: '#FB7185', padding: '6px 10px', borderRadius: '6px', fontSize: '12px'}}>
+                              {relatedShow.title}
+                              <button onClick={() => removeRelatedShow(show.id, relatedId)} style={{background: 'none', border: 'none', color: '#FB7185', cursor: 'pointer', fontSize: '14px', padding: 0, lineHeight: 1}}>×</button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                    {getRelatedShowIds(show.id).length === 0 && (
+                      <div style={{color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '10px'}}>No related shows linked yet.</div>
+                    )}
+
+                    <div style={{position: 'relative'}}>
+                      <input
+                        style={{...inputStyle, marginBottom: 0}}
+                        value={relatedSearch}
+                        onChange={e => setRelatedSearch(e.target.value)}
+                        placeholder="Search for a related show to link..."
+                      />
+                      {relatedSearch.trim() && (
+                        <div style={{position: 'absolute', top: '46px', left: 0, right: 0, zIndex: 10, background: '#1a1620', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', maxHeight: '220px', overflowY: 'auto'}}>
+                          {shows
+                            .filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id))
+                            .slice(0, 8)
+                            .map((s: any) => (
+                              <div
+                                key={s.id}
+                                onClick={() => { addRelatedShow(show.id, s.id); setRelatedSearch('') }}
+                                style={{padding: '10px 14px', color: '#F0EEE8', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.06)'}}
+                              >
+                                {s.title}
+                              </div>
+                            ))}
+                          {shows.filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id)).length === 0 && (
+                            <div style={{padding: '10px 14px', color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No matching shows.</div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
