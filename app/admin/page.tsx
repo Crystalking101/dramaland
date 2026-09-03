@@ -752,33 +752,31 @@ export default function AdminPanel() {
                       <div style={{color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '10px'}}>No related shows linked yet.</div>
                     )}
 
-                    <div style={{position: 'relative'}}>
-                      <input
-                        style={{...inputStyle, marginBottom: 0}}
-                        value={relatedSearch}
-                        onChange={e => setRelatedSearch(e.target.value)}
-                        placeholder="Search for a related show to link..."
-                      />
-                      {relatedSearch.trim() && (
-                        <div style={{position: 'absolute', top: '46px', left: 0, right: 0, zIndex: 10, background: '#1a1620', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', maxHeight: '220px', overflowY: 'auto'}}>
-                          {shows
-                            .filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id))
-                            .slice(0, 8)
-                            .map((s: any) => (
-                              <div
-                                key={s.id}
-                                onClick={() => { addRelatedShow(show.id, s.id); setRelatedSearch('') }}
-                                style={{padding: '10px 14px', color: '#F0EEE8', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.06)'}}
-                              >
-                                {s.title}
-                              </div>
-                            ))}
-                          {shows.filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id)).length === 0 && (
-                            <div style={{padding: '10px 14px', color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No matching shows.</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <input
+                      style={{...inputStyle, marginBottom: relatedSearch.trim() ? '0' : '12px'}}
+                      value={relatedSearch}
+                      onChange={e => setRelatedSearch(e.target.value)}
+                      placeholder="Search for a related show to link..."
+                    />
+                    {relatedSearch.trim() && (
+                      <div style={{background: '#1a1620', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', maxHeight: '220px', overflowY: 'auto', marginBottom: '12px'}}>
+                        {shows
+                          .filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id))
+                          .slice(0, 8)
+                          .map((s: any) => (
+                            <div
+                              key={s.id}
+                              onClick={() => { addRelatedShow(show.id, s.id); setRelatedSearch('') }}
+                              style={{padding: '10px 14px', color: '#F0EEE8', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.06)'}}
+                            >
+                              {s.title}
+                            </div>
+                          ))}
+                        {shows.filter((s: any) => s.id !== show.id && s.title?.toLowerCase().includes(relatedSearch.toLowerCase()) && !getRelatedShowIds(show.id).includes(s.id)).length === 0 && (
+                          <div style={{padding: '10px 14px', color: 'rgba(255,255,255,0.3)', fontSize: '13px'}}>No matching shows.</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
