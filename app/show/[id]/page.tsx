@@ -43,7 +43,43 @@ function getBaseTitle(title: string): string {
     .trim()
 }
 
+async function getManualRelatedShows(currentId: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Show_Related?or=(show_id.eq.${currentId},related_show_id.eq.${currentId})&select=*`,
+    {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+      cache: 'no-store'
+    }
+  )
+  if (!res.ok) return []
+  const links = await res.json()
+  const relatedIds = links.map((link: any) =>
+    link.show_id === currentId ? link.related_show_id : link.show_id
+  )
+  if (relatedIds.length === 0) return []
+
+  const idsClause = relatedIds.map((id: string) => `id.eq.${id}`).join(',')
+  const showsRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Shows?or=(${idsClause})&is_published=eq.true&select=*`,
+    {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+      cache: 'no-store'
+    }
+  )
+  return showsRes.ok ? await showsRes.json() : []
+}
+
 async function getSimilarShows(currentId: string, currentTitle: string, genre: string) {
+  // 0. Manually linked related shows (sequels, prequels, alternate translations) always come first
+  const manualMatches = await getManualRelatedShows(currentId)
+  const manualIds = manualMatches.map((s: any) => s.id)
+
   const baseTitle = getBaseTitle(currentTitle)
 
   // 1. Find sequels/prequels — other shows sharing the same base title
@@ -59,14 +95,15 @@ async function getSimilarShows(currentId: string, currentTitle: string, genre: s
         cache: 'no-store'
       }
     )
-    if (res.ok) sequelMatches = await res.json()
+    if (res.ok) sequelMatches = (await res.json()).filter((s: any) => !manualIds.includes(s.id))
   }
 
-  const remainingSlots = 6 - sequelMatches.length
-  if (remainingSlots <= 0) return sequelMatches
+  const combinedPriority = [...manualMatches, ...sequelMatches]
+  const remainingSlots = 6 - combinedPriority.length
+  if (remainingSlots <= 0) return combinedPriority.slice(0, 6)
 
   // 2. Fill the rest with genre matches
-  const excludeIds = [currentId, ...sequelMatches.map((s: any) => s.id)]
+  const excludeIds = [currentId, ...combinedPriority.map((s: any) => s.id)]
   const excludeClause = excludeIds.map(id => `id.neq.${id}`).join(',')
 
   if (!genre) {
@@ -81,7 +118,7 @@ async function getSimilarShows(currentId: string, currentTitle: string, genre: s
       }
     )
     const genreMatches = res.ok ? await res.json() : []
-    return [...sequelMatches, ...genreMatches]
+    return [...combinedPriority, ...genreMatches]
   }
 
   const firstGenre = genre.split(',')[0].trim()
@@ -112,7 +149,7 @@ async function getSimilarShows(currentId: string, currentTitle: string, genre: s
     if (fallback.ok) genreMatches = await fallback.json()
   }
 
-  return [...sequelMatches, ...genreMatches]
+  return [...combinedPriority, ...genreMatches]
 }
 
 export default function ShowDetail({ params }: { params: Promise<{ id: string }> }) {
