@@ -43,7 +43,11 @@ export default function Nav() {
   function handleSearchChange(value: string) {
     setSearchQuery(value)
     if (value.trim()) {
-      router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+      if (pathname === '/search') {
+        router.replace(`/search?q=${encodeURIComponent(value.trim())}`)
+      } else {
+        router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+      }
     }
   }
 
