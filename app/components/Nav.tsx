@@ -43,6 +43,9 @@ export default function Nav() {
 
   function handleSearchChange(value: string) {
     setSearchQuery(value) 
+    if (pathname === '/search' && value.trim()) {
+      router.replace(`/search?q=${encodeURIComponent(value.trim())}`)
+    }
   }
 
   function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
