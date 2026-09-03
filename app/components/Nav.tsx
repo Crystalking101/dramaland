@@ -42,17 +42,7 @@ export default function Nav() {
   }
 
   function handleSearchChange(value: string) {
-    setSearchQuery(value)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      if (value.trim()) {
-        if (pathname === '/search') {
-          router.replace(`/search?q=${encodeURIComponent(value.trim())}`)
-        } else {
-          router.push(`/search?q=${encodeURIComponent(value.trim())}`)
-        }
-      }
-    }, 400)
+    setSearchQuery(value) 
   }
 
   function handleSearch(e: React.KeyboardEvent<HTMLInputElement>) {
